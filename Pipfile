@@ -13,6 +13,7 @@ pillow = "*"
 django-environ = "*"
 psycopg2 = "*"
 psycopg2-binary = "*"
+django-cors-headers = "*"
 
 [dev-packages]
 
