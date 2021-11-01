@@ -24,11 +24,14 @@ class ChatGroupViewSet(viewsets.ModelViewSet):
         return Response(self.get_serializer(instance=chat_group).data)
 
     def destroy(self, request, pk):
-        self.get_chat_group(pk=pk).delete()
-        return Response(status=status.HTTP_200_OK)
+        chat_group = self.get_chat_group(pk=pk)
+        if request.user.id == chat_group.creator.id:
+            chat_group.delete()
+            return Response(status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_403_FORBIDDEN)
 
     def create(self, request):
-        REQUIRED_FIELDS = {"name", "description", "created_at"}
+        REQUIRED_FIELDS = {"name", "description"}
 
         if REQUIRED_FIELDS & set(request.data) != REQUIRED_FIELDS:
             return Response(
