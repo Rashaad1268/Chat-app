@@ -10,39 +10,43 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class MemberSerializer(serializers.ModelSerializer):
-    user = UserSerializer(source="user")
+    user = UserSerializer()
     chat_group_id = serializers.IntegerField(source="chat_group.id")
 
     class Meta:
         model = Member
-        fields = ("id", "nick_name", "joined_at")
+        exclude = ("chat_group",)
 
 
 class ChannelSerializer(serializers.ModelSerializer):
-    chat_group_id = serializers.IntegerField(source="chat_group.id")
+    chat_group_id = serializers.SerializerMethodField()
+
+    def get_chat_group_id(self, chat_group):
+        return chat_group.id
 
     class Meta:
         model = Channel
-        fields = ("id", "name", "description", "position", "created_at")
+        exclude = ("chat_group",)
+
+
+class ChatGroupSerializer(serializers.ModelSerializer):
+    creator = UserSerializer()
+    members = MemberSerializer(many=True)
+    member_count = serializers.IntegerField(default=1)
+    channels = ChannelSerializer(many=True, default=[])
+
+    class Meta:
+        model = ChatGroup
+        fields = "__all__"
 
 
 class MessageSerializer(serializers.ModelSerializer):
+    chat_group = ChannelSerializer(source="chat_group")
     author = MemberSerializer(source="author")
     channel = ChannelSerializer(source="channel")
-    chat_group_id = serializers.IntegerField(source="channel.chat_group.id")
 
     class Meta:
         model = Message
         fields = ("id", "content", "created_at", "edited_at", "is_edited")
 
 
-class ChatGroupSerializer(serializers.ModelSerializer):
-    creator = UserSerializer(source="creator")
-    members = MemberSerializer(source="members", many=True)
-    member_count = serializers.IntegerField(source="member_count")
-    channels = ChannelSerializer(source="channels", many=True)
-    channel_count = serializers.IntegerField(source="channel_count")
-
-    class Meta:
-        model = ChatGroup
-        fields = ("id", "name", "description", "icon", "created_at")

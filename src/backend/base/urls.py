@@ -1,9 +1,10 @@
 from django.urls import path
 from rest_framework import routers
 
-from . import views
+from .views import ChatGroupViewSet
 
 
 router = routers.DefaultRouter()
+router.register("chat-groups", ChatGroupViewSet, basename="chat_group_viewset")
 
-urlpatterns = []
+urlpatterns = router.urls

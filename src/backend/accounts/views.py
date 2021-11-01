@@ -28,7 +28,6 @@ class UserViewSet(mixins.RetrieveModelMixin,
                   mixins.UpdateModelMixin,
                   mixins.DestroyModelMixin,
                   viewsets.GenericViewSet):
-    queryset = User.objects.all()
     serializer_class = UserSerializer
 
     @action(methods=("GET",), detail=False, url_path="@me")

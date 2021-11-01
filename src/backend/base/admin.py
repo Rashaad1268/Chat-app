@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import ChatGroup, Channel, Member, Message
+from .models import ChatGroup, Channel, Member, Message, Role, RolePermissions
 
 
 class ModelAdmin(admin.ModelAdmin):
@@ -30,7 +30,13 @@ class MessageAdmin(admin.ModelAdmin):
         return channel.name
 
 
+class RoleAdmin(admin.ModelAdmin):
+    list_display = ("id", "name", "created_at")
+
+
 admin.site.register(ChatGroup, ModelAdmin)
 admin.site.register(Channel, ModelAdmin)
 admin.site.register(Member, MemberAdmin)
-admin.site.register(Message, )
+admin.site.register(Message, MessageAdmin)
+admin.site.register(Role, RoleAdmin)
+admin.site.register(RolePermissions)
