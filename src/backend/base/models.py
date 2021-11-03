@@ -1,6 +1,5 @@
 from django.db import models
 from django.conf import settings
-from django.utils import timezone
 
 User = settings.AUTH_USER_MODEL
 
@@ -21,7 +20,7 @@ class ChatGroup(Model):  # Named as ChatGroup to avoid confusion with the built-
     name = models.CharField(max_length=50)
     description = models.TextField(max_length=255, null=True, blank=True)
     icon = models.ImageField(upload_to="chatgroup/icons", null=True, blank=True)
-    created_at = models.DateTimeField(default=timezone.now)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
@@ -68,7 +67,7 @@ class Role(Model):
     name = models.CharField(max_length=25)
     colour = models.CharField(max_length=15, default="#000000", blank=True)
     position = models.IntegerField()
-    created_at = models.DateTimeField(default=timezone.now)
+    created_at = models.DateTimeField(auto_now_add=True)
     permissions = models.OneToOneField(RolePermissions, on_delete=models.CASCADE)
 
     class Meta:
@@ -86,7 +85,7 @@ class Member(Model):
     chat_group = models.ForeignKey(ChatGroup, on_delete=models.CASCADE)
     nick_name = models.CharField(max_length=25, null=True, blank=True)
     roles = models.ManyToManyField(Role)
-    joined_at = models.DateTimeField(default=timezone.now)
+    joined_at = models.DateTimeField(auto_now_add=True)
 
 
 class Channel(Model):
@@ -95,7 +94,7 @@ class Channel(Model):
     name = models.CharField(max_length=50)
     description = models.TextField(max_length=255, null=True, blank=True)
     position = models.IntegerField()
-    created_at = models.DateTimeField(default=timezone.now)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         constraints = [
@@ -111,5 +110,5 @@ class Message(Model):
     author = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
     channel = models.ForeignKey(Channel, on_delete=models.CASCADE)
     content = models.TextField(max_length=1000)
-    created_at = models.DateTimeField(default=timezone.now)
-    edited_at = models.DateTimeField(default=timezone.now, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    edited_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)

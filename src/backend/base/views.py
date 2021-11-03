@@ -11,11 +11,13 @@ User = get_user_model()
 
 class ChatGroupViewSet(viewsets.ModelViewSet):
     serializer_class = ChatGroupSerializer
+    REQUIRED_FIELDS = {"name", "description"}
+    ALL_EDITABLE_FIELDS = {"name", "description", "icon"}
 
     def get_queryset(self):
         for member in self.request.user.member_set.all():
             yield member.chat_group
-            
+
     def get_chat_group(self, *args, **kwargs):
         return get_object_or_404(ChatGroup, *args, **kwargs)
 
@@ -31,8 +33,7 @@ class ChatGroupViewSet(viewsets.ModelViewSet):
         return Response(status=status.HTTP_403_FORBIDDEN)
 
     def create(self, request):
-        REQUIRED_FIELDS = {"name", "description"}
-
+        REQUIRED_FIELDS = self.REQUIRED_FIELDS
         if REQUIRED_FIELDS & set(request.data) != REQUIRED_FIELDS:
             return Response(
                 {"detail": f"Required fields not supplied ({', '.join(REQUIRED_FIELDS - set(request.data))})"},
@@ -41,4 +42,13 @@ class ChatGroupViewSet(viewsets.ModelViewSet):
         data = request.data
         chat_group = ChatGroup.objects.create(name=data["name"], description=data["description"], creator=request.user,
                                               icon=icon)
+        return Response(self.get_serializer(instance=chat_group).data)
+
+    def partial_update(self, request, pk):
+        chat_group = self.get_chat_group(pk=pk)
+        for key, value in request.data.items():
+            if key in self.ALL_EDITABLE_FIELDS:
+                setattr(chat_group, key, value)
+
+        chat_group.save(force_update=True)
         return Response(self.get_serializer(instance=chat_group).data)
