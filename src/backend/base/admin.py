@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import ChatGroup, Channel, Member, Message, Role, RolePermissions
+from .models import ChatGroup, Invite, Channel, Member, Message, Role, RolePermissions
 
 
 class ModelAdmin(admin.ModelAdmin):
@@ -40,3 +40,4 @@ admin.site.register(Member, MemberAdmin)
 admin.site.register(Message, MessageAdmin)
 admin.site.register(Role, RoleAdmin)
 admin.site.register(RolePermissions)
+admin.site.register(Invite)
