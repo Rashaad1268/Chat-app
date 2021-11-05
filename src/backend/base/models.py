@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+from .utils import generate_invite
 
 User = settings.AUTH_USER_MODEL
 
@@ -24,6 +25,7 @@ class ChatGroup(Model):  # Named as ChatGroup to avoid confusion with the built-
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
+        Invite.objects.create(chat_group=self)
         Member.objects.create(user=self.creator, chat_group=self, joined_at=self.created_at)
 
     @property
@@ -41,6 +43,15 @@ class ChatGroup(Model):  # Named as ChatGroup to avoid confusion with the built-
     @property
     def roles(self):
         return self.role_set.all()
+
+
+class Invite(Model):
+    chat_group = models.OneToOneField(ChatGroup, on_delete=models.CASCADE)
+    code = models.CharField(max_length=8, default=generate_invite, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.code
 
 
 class RolePermissions(Model):
