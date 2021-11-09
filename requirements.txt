@@ -15,6 +15,7 @@ channels==3.0.4
 constantly==15.1.0
 cryptography==35.0.0; python_version >= '3.6'
 daphne==3.0.2; python_version >= '3.6'
+django-cors-headers==3.10.0
 django-environ==0.8.1
 django==3.2.8
 djangorestframework-simplejwt==5.0.0
