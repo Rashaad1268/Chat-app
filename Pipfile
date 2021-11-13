@@ -15,6 +15,7 @@ psycopg2 = "*"
 psycopg2-binary = "*"
 django-cors-headers = "*"
 channels-redis = "*"
+drf-nested-routers = "*"
 
 [dev-packages]
 
