@@ -95,7 +95,7 @@ class Member(Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     chat_group = models.ForeignKey(ChatGroup, on_delete=models.CASCADE)
     nick_name = models.CharField(max_length=25, null=True, blank=True)
-    roles = models.ManyToManyField(Role)
+    roles = models.ManyToManyField(Role, blank=True)
     joined_at = models.DateTimeField(auto_now_add=True)
 
 
@@ -106,6 +106,10 @@ class Channel(Model):
     description = models.TextField(max_length=255, null=True, blank=True)
     position = models.IntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
+
+    @property
+    def group_name(self):
+        return f"ChatChannel-{self.id}"
 
     class Meta:
         constraints = [
@@ -118,7 +122,7 @@ class Channel(Model):
 
 class Message(Model):
     """"A message being sent by a member to a channel"""
-    author = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
+    author = models.ForeignKey(Member, null=True, on_delete=models.SET_NULL)
     channel = models.ForeignKey(Channel, on_delete=models.CASCADE)
     content = models.TextField(max_length=1000)
     created_at = models.DateTimeField(auto_now_add=True)
