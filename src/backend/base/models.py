@@ -23,14 +23,6 @@ class ChatGroup(Model):  # Named as ChatGroup to avoid confusion with the built-
     icon = models.ImageField(upload_to="chatgroup/icons", null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-        Channel.objects.create(chanr_group=self, name="General", position=1)
-        Invite.objects.create(chat_group=self)
-        Member.objects.create(
-            user=self.creator, chat_group=self, joined_at=self.created_at
-        )
-
     @property
     def members(self):
         return self.member_set.all()
