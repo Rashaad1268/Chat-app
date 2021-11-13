@@ -54,19 +54,18 @@ class ChannelViewSet(NoListViewSet):
     def get_queryset(self):
         return Channel.objects.filter(chat_group__member__user__id=self.request.user.id)
 
-    @action(detail=True, methods=("GET",))
-    def messages(self, request, pk):
-        queryset = Message.objects.filter(channel__pk=pk).order_by("-created_at")[:51]
-        # Return the most recent 50 messages sent in the channel
-        return Response(MessageSerializer(queryset, many=True).data)
 
-    @messages.mapping.post
-    def post_message(self, request, pk):
-        channel = get_object_or_404(Channel, pk=pk)
+class MessageViewSet(viewsets.ModelViewSet):
+    serializer_class = MessageSerializer
+
+    def get_queryset(self):
+        return Message.objects.filter(channel__id=self.kwargs["channel_pk"])
+
+    def create(self, request, channel_pk):
         data = dict(**request.data)
         data["author"] = request.user.id
-        data["channel"] = channel.id
+        data["channel"] = channel_pk
         serializer = MessageCreateSerializer(data=data)
         serializer.is_valid(raise_exception=True)
         message = serializer.save()
-        return Response(MessageSerializer(message).data)
+        return Response(MessageSerializer(instance=message).data)
