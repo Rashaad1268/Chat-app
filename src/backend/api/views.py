@@ -14,7 +14,7 @@ from .serializers import (
     MessageSerializer,
 )
 from base.models import ChatGroup, Invite, Channel, Member, Message
-from .extra_serializers import ChatGroupCreateSerializer
+from .extra_serializers import ChatGroupCreateSerializer, MessageCreateSerializer
 
 
 User = get_user_model()
@@ -42,9 +42,7 @@ class ChatGroupViewSet(viewsets.ModelViewSet):
             return ChatGroupSerializer
 
     def create(self, request, *args, **kwargs):
-        data = request.data
-        data["creator"] = request.user.id
-        serializer = self.get_serializer(data=data)
+        serializer = self.get_serializer(data={**request.data, "creator": request.user.id})
         serializer.is_valid(raise_exception=True)
         chat_group = serializer.save()
         return Response(ChatGroupSerializer(chat_group).data)
@@ -55,3 +53,20 @@ class ChannelViewSet(NoListViewSet):
 
     def get_queryset(self):
         return Channel.objects.filter(chat_group__member__user__id=self.request.user.id)
+
+    @action(detail=True, methods=("GET",))
+    def messages(self, request, pk):
+        queryset = Message.objects.filter(channel__pk=pk).order_by("-created_at")[:51]
+        # Return the most recent 50 messages sent in the channel
+        return Response(MessageSerializer(queryset, many=True).data)
+
+    @messages.mapping.post
+    def post_message(self, request, pk):
+        channel = get_object_or_404(Channel, pk=pk)
+        data = dict(**request.data)
+        data["author"] = request.user.id
+        data["channel"] = channel.id
+        serializer = MessageCreateSerializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        message = serializer.save()
+        return Response(MessageSerializer(message).data)
