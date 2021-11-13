@@ -1,5 +1,7 @@
+from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
 from django.contrib.auth import get_user_model
+from backend.base.models import Message
 
 from base.models import ChatGroup, Channel
 from .serializers import UserSerializer, MemberSerializer
@@ -19,4 +21,11 @@ class ChannelCreateSerializer(ModelSerializer):
 
     class Meta:
         model = Channel
-        fields = ("chat_group", "name", "description", "position")
+        exclude = ("id", "created_at")
+
+
+class MessageCreateSerializer(ModelSerializer):
+    author = serializers.IntegerField(null=False)
+    class Meta:
+        model = Message
+        fields = ("author", "channel", "content")
