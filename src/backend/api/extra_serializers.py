@@ -24,7 +24,6 @@ class ChannelCreateSerializer(ModelSerializer):
 
 
 class MessageCreateSerializer(ModelSerializer):
-    author = serializers.IntegerField(required=True)
     class Meta:
         model = Message
         fields = ("author", "channel", "content")
