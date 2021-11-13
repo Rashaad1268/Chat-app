@@ -115,7 +115,7 @@ class Channel(Model):
 
 
 class Message(Model):
-    """ "A message being sent by a member to a channel"""
+    """A message being sent by a member to a channel"""
 
     author = models.ForeignKey(Member, null=True, on_delete=models.SET_NULL)
     channel = models.ForeignKey(Channel, on_delete=models.CASCADE)
