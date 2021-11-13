@@ -1,9 +1,8 @@
 from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
 from django.contrib.auth import get_user_model
-from backend.base.models import Message
 
-from base.models import ChatGroup, Channel
+from base.models import ChatGroup, Channel, Message
 from .serializers import UserSerializer, MemberSerializer
 
 
@@ -25,7 +24,7 @@ class ChannelCreateSerializer(ModelSerializer):
 
 
 class MessageCreateSerializer(ModelSerializer):
-    author = serializers.IntegerField(null=False)
+    author = serializers.IntegerField(required=True)
     class Meta:
         model = Message
         fields = ("author", "channel", "content")
