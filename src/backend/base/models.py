@@ -126,4 +126,4 @@ class Message(Model):
     channel = models.ForeignKey(Channel, on_delete=models.CASCADE)
     content = models.TextField(max_length=1000)
     created_at = models.DateTimeField(auto_now_add=True)
-    edited_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    edited_at = models.DateTimeField(auto_now=True, null=True, blank=True)
