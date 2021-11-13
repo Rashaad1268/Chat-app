@@ -46,7 +46,7 @@ class MemberAdmin(admin.ModelAdmin):
 
 class MessageAdmin(admin.ModelAdmin):
     list_display = ("id", "author_name", "channel_name")
-    search_fields = ("id", "content", "author_name", "channel_name")
+    search_fields = ("id", "content", "author__name", "channel__name")
     show_full_result_count = False
     paginator = CachingPaginator
 
@@ -55,8 +55,8 @@ class MessageAdmin(admin.ModelAdmin):
         return message.author.nick_name or message.author.user.username
 
     @admin.display
-    def channel_name(self, channel):
-        return channel.name
+    def channel_name(self, message):
+        return message.channel.name
 
 
 admin.site.register(ChatGroup, ModelAdmin)
