@@ -1,0 +1,32 @@
+{
+  "name": "next-chat-app",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "cookies": "^0.8.0",
+    "next": "11.1.2",
+    "react": "17.0.2",
+    "react-dom": "17.0.2",
+    "safer-buffer": "^2.1.2",
+    "socket.io": "^4.3.2",
+    "socket.io-client": "^4.3.2"
+  },
+  "devDependencies": {
+    "@types/cookies": "^0.7.7",
+    "@types/react": "17.0.30",
+    "@types/socket.io": "^3.0.2",
+    "@types/socket.io-client": "^3.0.0",
+    "autoprefixer": "^10.4.0",
+    "eslint": "8.0.1",
+    "eslint-config-next": "11.1.2",
+    "postcss": "^8.3.11",
+    "tailwindcss": "^2.2.19",
+    "typescript": "4.4.4"
+  }
+}

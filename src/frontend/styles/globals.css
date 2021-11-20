@@ -1,0 +1,44 @@
+/* .App-header {
+  height: calc(100vh - 50px);
+  background-color: #fafafa;
+  border-bottom: 1px solid #eaeaea;
+  padding: 0.5em;
+}
+
+::-webkit-scrollbar {
+  display: none;
+}
+
+body {
+  margin: 0;
+} */
+
+/* .App {
+  text-align: center;
+}
+
+.AppMain {
+  max-height: 100vh !important;
+}
+
+.App-header {
+  background-color: #000000;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+body::-webkit-scrollbar {
+  display: none;
+}
+
+body {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  margin: 0;
+  padding: 0;
+} */
