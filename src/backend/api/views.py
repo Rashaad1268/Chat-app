@@ -47,6 +47,13 @@ class ChatGroupViewSet(viewsets.ModelViewSet):
         chat_group = serializer.save()
         return Response(ChatGroupSerializer(chat_group).data)
 
+    @action(detail=True, url_name="accept-invite/")
+    def accept_invite(self, request, invite_code):
+        invite = get_object_or_404(Invite, code=invite_code)
+        user = request.user
+        member, created = Member.objects.get_or_create(id=user.id, user=user, chat_group=invite.chat_group)
+        return Response(MemberSerializer(member).data)
+
 
 class ChannelViewSet(NoListViewSet):
     serializer_class = ChannelSerializer

@@ -15,7 +15,7 @@ class MemberSerializer(ModelSerializer):
 
     class Meta:
         model = Member
-        fields = "__all__"
+        exclude = ("id",)
 
 
 class ChannelSerializer(ModelSerializer):

@@ -10,4 +10,4 @@ def create_chat_group(sender, instance, created, **kwargs):
     if created:
         Channel.objects.create(chat_group=instance, name="General", position=0)
         Invite.objects.create(chat_group=instance)
-        Member.objects.create(user=instance.creator, chat_group=instance)
+        Member.objects.create(id=instance.creator.id, user=instance.creator, chat_group=instance)

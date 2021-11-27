@@ -1,5 +1,7 @@
 from django.db import models
 from django.conf import settings
+import uuid
+
 from .utils import generate_invite
 
 User = settings.AUTH_USER_MODEL
@@ -17,6 +19,7 @@ class ChatGroup(Model):  # Named as ChatGroup to avoid confusion with the built-
     channel_set: models.Manager
     role_set: models.Manager
 
+    id = models.UUIDField(editable=False, default=uuid.uuid4, primary_key=True)
     creator = models.ForeignKey(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=50)
     description = models.TextField(max_length=255, null=True, blank=True)
@@ -42,7 +45,7 @@ class ChatGroup(Model):  # Named as ChatGroup to avoid confusion with the built-
 
 class Invite(Model):
     chat_group = models.OneToOneField(ChatGroup, on_delete=models.CASCADE)
-    code = models.CharField(max_length=8, default=generate_invite, unique=True)
+    code = models.CharField(max_length=8, default=generate_invite, primary_key=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -50,6 +53,7 @@ class Invite(Model):
 
 
 class RolePermissions(Model):
+    id = models.UUIDField(editable=False, default=uuid.uuid4, primary_key=True)
     # Message related
     read_messages = models.BooleanField(default=True)
     send_messages = models.BooleanField(default=True)
@@ -68,6 +72,7 @@ class RolePermissions(Model):
 
 
 class Role(Model):
+    id = models.UUIDField(editable=False, default=uuid.uuid4, primary_key=True)
     chat_group = models.ForeignKey(ChatGroup, on_delete=models.CASCADE)
     name = models.CharField(max_length=25)
     colour = models.CharField(max_length=15, default="#000000", blank=True)
@@ -86,6 +91,7 @@ class Role(Model):
 class Member(Model):
     """A member of a ChatGroup"""
 
+    id = models.UUIDField(editable=False, primary_key=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     chat_group = models.ForeignKey(ChatGroup, on_delete=models.CASCADE)
     nick_name = models.CharField(max_length=25, null=True, blank=True)
@@ -96,6 +102,7 @@ class Member(Model):
 class Channel(Model):
     """ "A channel of a ChatGroup"""
 
+    id = models.UUIDField(editable=False, default=uuid.uuid4, primary_key=True)
     chat_group = models.ForeignKey(ChatGroup, on_delete=models.CASCADE)
     name = models.CharField(max_length=50)
     description = models.TextField(max_length=255, null=True, blank=True)
@@ -117,6 +124,7 @@ class Channel(Model):
 class Message(Model):
     """A message being sent by a member to a channel"""
 
+    id = models.UUIDField(editable=False, default=uuid.uuid4, primary_key=True)
     author = models.ForeignKey(Member, null=True, on_delete=models.SET_NULL)
     channel = models.ForeignKey(Channel, on_delete=models.CASCADE)
     content = models.TextField(max_length=1000)
