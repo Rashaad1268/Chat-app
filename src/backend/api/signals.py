@@ -4,16 +4,30 @@ from asgiref.sync import async_to_sync
 from django.dispatch import receiver
 
 from .serializers import MessageSerializer
-from base.models import Message, Channel
+from base.models import Message, Channel, Member
+
+
+channel_layer = get_channel_layer()
 
 
 @receiver(post_save, sender=Message)
-def new_message(sender, instance, created, **kwargs):
-    channel_layer = get_channel_layer()
-
+def dispatch_message_create(sender, instance, created, **kwargs):
     if created:
-        chat_group = instance.chat_group
-        for member in chat_group.members:
-            ...
+        async_to_sync(channel_layer.group_send)(instance.channel.chat_group.channel_name,
+                                                {"type": "chat_message_create",
+                                                 "payload": MessageSerializer(instance).data})
 
 
+@receiver(post_save, sender=Message)
+def dispatch_message_edit(sender, instance, created, **kwargs):
+    if not created:
+        async_to_sync(channel_layer.group_send)(instance.channel.chat_group.channel_name,
+                                                {"type": "chat_message_edit",
+                                                 "payload": MessageSerializer(instance).data})
+
+
+@receiver(post_delete, sender=Message)
+def dispatch_message_delete(sender, instance, **kwargs):
+    async_to_sync(channel_layer.group_send)(instance.channel.chat_group.channel_name,
+                                            {"type": "chat_message_delete",
+                                             "payload": MessageSerializer(instance).data})
