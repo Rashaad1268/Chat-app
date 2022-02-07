@@ -27,6 +27,11 @@ class ChatGroup(Model):  # Named as ChatGroup to avoid confusion with the built-
     created_at = models.DateTimeField(auto_now_add=True)
 
     @property
+    def channel_name(self):
+        """The channel name used when dispatching an event"""
+        return f"ChatGroup-{self.id}"
+
+    @property
     def members(self):
         return self.member_set.all()
 
@@ -91,7 +96,7 @@ class Role(Model):
 class Member(Model):
     """A member of a ChatGroup"""
 
-    id = models.UUIDField(editable=False, primary_key=True)
+    id = models.UUIDField(editable=False, default=uuid.uuid4, primary_key=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     chat_group = models.ForeignKey(ChatGroup, on_delete=models.CASCADE)
     nick_name = models.CharField(max_length=25, null=True, blank=True)
