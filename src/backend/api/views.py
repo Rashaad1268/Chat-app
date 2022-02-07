@@ -69,6 +69,9 @@ class MessageViewSet(viewsets.ModelViewSet):
         return Message.objects.filter(channel__id=self.kwargs["channel_pk"])
 
     def create(self, request, channel_pk):
+        if not isinstance(request.data, dict):
+            return Response(status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+    
         data = dict(**request.data)
         data["author"] = request.user.id
         data["channel"] = channel_pk
