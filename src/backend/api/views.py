@@ -11,11 +11,10 @@ from .serializers import (
     ChatGroupSerializer,
     MemberSerializer,
     InviteSerializer,
-    MessageSerializer,
+    MessageSerializer, RoleSerializer,
 )
 from base.models import ChatGroup, Invite, Channel, Member, Message
-from .extra_serializers import ChatGroupCreateSerializer, MessageCreateSerializer
-
+from .extra_serializers import ChatGroupCreateSerializer, MessageCreateSerializer, RoleCreateSerializer
 
 User = get_user_model()
 
@@ -25,7 +24,6 @@ class NoListViewSet(
     mixins.RetrieveModelMixin,
     mixins.UpdateModelMixin,
     mixins.DestroyModelMixin,
-    mixins.ListModelMixin,
     viewsets.GenericViewSet,
 ):
     pass
@@ -53,6 +51,22 @@ class ChatGroupViewSet(viewsets.ModelViewSet):
         user = request.user
         member, created = Member.objects.get_or_create(id=user.id, user=user, chat_group=invite.chat_group)
         return Response(MemberSerializer(member).data)
+
+    @action(detail=True, url_name="create-role/", methods=("POST",))
+    def create_role(self, request, chat_group_id):
+        if isinstance(request.data, dict):
+            request.data["chat_group"] = chat_group_id
+        serializer = RoleCreateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
+
+    @action(detail=True, url_name="leave/", methods=("GET",))
+    def leave_chat_group(self, request, chat_group_id):
+        member = get_object_or_404(ChatGroup, user=request.user, chat_group__id=chat_group_id)
+        member.delete()
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class ChannelViewSet(NoListViewSet):
