@@ -58,3 +58,21 @@ class ChatConsumer(WebsocketConsumer):
 
     def chat_message_edit(self, event):
         self.dispatch_named_event("MESSAGE_UPDATE", event["payload"])
+
+    def chat_member_join(self, event):
+        self.dispatch_named_event("MEMBER_JOIN", event["payload"])
+
+    def chat_member_update(self, event):
+        self.dispatch_named_event("MEMBER_UPDATE", event["payload"])
+
+    def chat_member_leave(self, event):
+        self.dispatch_named_event("MEMBER_LEAVE", event["payload"])
+
+    def chat_channel_create(self, event):
+        self.dispatch_named_event("CHANNEL_CREATE", event["payload"])
+
+    def chat_channel_update(self, event):
+        self.dispatch_named_event("CHANNEL_UPDATE", event["payload"])
+
+    def chat_channel_delete(self, event):
+        self.dispatch_named_event("CHANNEL_DELETE", event["payload"])
