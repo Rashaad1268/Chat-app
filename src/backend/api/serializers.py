@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
 
-from base.models import ChatGroup, Invite, Channel, Member, Message
+from base.models import ChatGroup, Invite, Channel, Member, Message, Role, RolePermissions
 
 
 class UserSerializer(ModelSerializer):
@@ -36,6 +36,24 @@ class InviteSerializer(ModelSerializer):
     class Meta:
         model = Invite
         fields = ("code", "created_at")
+
+
+class RolePermissionSerializer(ModelSerializer):
+    class Meta:
+        model = RolePermissions
+        exclude = ("id",)
+
+
+class RoleSerializer(ModelSerializer):
+    chat_group = serializers.PrimaryKeyRelatedField(allow_null=False,
+                                                    read_only=True,
+                                                    pk_field=serializers.UUIDField(format='hex_verbose'))
+    position = serializers.IntegerField(read_only=True)
+    permissions = RolePermissionSerializer()
+
+    class Meta:
+        model = Role
+        fields = ("__all__",)
 
 
 class ChatGroupSerializer(ModelSerializer):
