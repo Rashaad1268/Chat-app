@@ -1,6 +1,10 @@
+import datetime
+
 from django.db import models
 from django.conf import settings
 import uuid
+
+from django.db.models.expressions import RawSQL
 
 from .utils import generate_invite
 
@@ -81,9 +85,20 @@ class Role(Model):
     chat_group = models.ForeignKey(ChatGroup, on_delete=models.CASCADE)
     name = models.CharField(max_length=25)
     colour = models.CharField(max_length=15, default="#000000", blank=True)
-    position = models.PositiveIntegerField()
+    position = models.PositiveIntegerField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     permissions = models.OneToOneField(RolePermissions, on_delete=models.CASCADE)
+
+    def save(self, *args, **kwargs):
+        # TODO: Fix IntegrityError for position column
+        if not self._state.adding:
+            self.position = self.objects.raw(
+                "SELECT COALESCE(MAX(position), 0) + 1 FROM base_role WHERE chat_group_id='38f395db-796a-4198-817a-d41451f0c9f4'",
+                self.chat_group.id
+            )
+        print(self.chat_group.id)
+        print(self.position)
+        super().save(*args, **kwargs)
 
     class Meta:
         constraints = [
@@ -105,7 +120,7 @@ class Member(Model):
 
 
 class Channel(Model):
-    """ "A channel of a ChatGroup"""
+    """A channel of a ChatGroup"""
 
     id = models.UUIDField(editable=False, default=uuid.uuid4, primary_key=True)
     chat_group = models.ForeignKey(ChatGroup, on_delete=models.CASCADE)
@@ -134,4 +149,10 @@ class Message(Model):
     channel = models.ForeignKey(Channel, on_delete=models.CASCADE)
     content = models.TextField(max_length=1000)
     created_at = models.DateTimeField(auto_now_add=True)
-    edited_at = models.DateTimeField(auto_now=True, null=True, blank=True)
+    edited_at = models.DateTimeField(null=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        if not self._state.adding:
+            self.edited_at = datetime.datetime.utcnow()
+
+        super().save(*args, **kwargs)
