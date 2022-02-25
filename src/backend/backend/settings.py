@@ -152,6 +152,13 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 ASGI_APPLICATION = 'backend.asgi.application'
 AUTH_USER_MODEL = 'accounts.CustomUser'
 
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+        'LOCATION': 'redis://127.0.0.1:6379',
+    }
+}
+
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000'
 ]
