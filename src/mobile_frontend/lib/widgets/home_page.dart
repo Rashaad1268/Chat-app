@@ -1,9 +1,11 @@
 import 'dart:convert' show Encoding, json;
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
-import 'package:http/retry.dart';
 import 'package:mobile_frontend/widgets/authentication.dart';
-import '../constants.dart' show secureStorage, apiUrl;
+import '../constants.dart' show apiUrl;
+
+const secureStorage = FlutterSecureStorage();
 
 class HomePage extends StatefulWidget {
   HomePage({Key? key}) : super(key: key);
@@ -17,15 +19,13 @@ class _HomePageState extends State<HomePage> {
   bool isLoggedIn = false;
 
   _HomePageState() {
-    verifyToken().then((_) => {});
+    verifyToken().then((bool result) => {setIsLoggedIn(result)});
   }
 
-  Future<void> verifyToken() async {
+  Future<bool> verifyToken() async {
     final token = await secureStorage.read(key: "accessToken");
-    print(token);
     if (token == null) {
-      setState(() => isLoggedIn = false);
-      return null;
+      return false;
     }
 
     var response = await http.post(Uri.parse(apiUrl + "auth/token/verify/"),
@@ -34,9 +34,7 @@ class _HomePageState extends State<HomePage> {
           'Content-Type': 'application/json; charset=UTF-8',
         });
 
-    setState(() {
-      isLoggedIn = response.body == "{}";
-    });
+    return response.body == "{}";
   }
 
   void setIsLoggedIn(bool status) {
@@ -47,10 +45,10 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    if (!isLoggedIn) {
+    print("Login Status " + isLoggedIn.toString());
+    if (isLoggedIn == false) {
       return LoginPage(setIsLoggedIn);
     }
-
     return const Scaffold(
         body: Align(
             child: Text(
