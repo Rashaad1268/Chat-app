@@ -1,10 +1,7 @@
 import 'dart:convert' show json;
 import 'package:flutter/material.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:http/http.dart' as http;
-import '../constants.dart' show apiUrl, emailRegex;
-
-const secureStorage = FlutterSecureStorage();
+import '../api.dart';
+import '../constants.dart' show emailRegex, secureStorage;
 
 String? validateEmail(String? email) {
   if (email == null || emailRegex.hasMatch(email) == false) {
@@ -15,7 +12,14 @@ String? validateEmail(String? email) {
 }
 
 String? validatePassword(String? password) {
-
+  /*
+  Check if a password contains
+  at lest 8 characters
+  1 uppercase letter
+  */
+  if (password == null) {
+    return 'Enter a password';
+  }
 }
 
 class LoginPage extends StatefulWidget {
@@ -42,21 +46,16 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<bool> attemptLogin(String email, String password) async {
-    var response = await http.post(Uri.parse(apiUrl + 'auth/token/'),
-        body: json.encode({'email': email, 'password': password}),
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-        });
+    var response = await requestApi('post', 'auth/token/',
+        data: {"email": email, "password": password});
+
     if (response.statusCode == 200) {
-      final tokens = json.decode(response.body);
-      await secureStorage.write(key: 'accessToken', value: tokens['access']);
-      await secureStorage.write(key: 'refreshToken', value: tokens['refresh']);
+      Map<dynamic, dynamic> userData = response.data;
+      await secureStorage.write(key: 'userData', value: json.encode(userData));
       setIsLoggedIn(true);
-      // print(await secureStorage.read(key: 'accessToken')); // prints null for some reason
-      // print(await secureStorage.read(key: 'refreshToken')); // same
       return true;
     } else if (response.statusCode == 400) {
-      // Account with the given credentials does not exist
+      // Put a message saying that an account with the given credentials does not exist
       setIsLoggedIn(false);
       return false;
     } else {
@@ -123,7 +122,7 @@ class _LoginPageState extends State<LoginPage> {
                         height: 50,
                         padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
                         child: ElevatedButton(
-                          style: ButtonStyle(),
+                          style: const ButtonStyle(),
                           child: const Text('Login'),
                           onPressed: () {
                             if (_formKey.currentState!.validate()) {
@@ -162,6 +161,7 @@ class SignupPage extends StatefulWidget {
   SignupPage(this.setIsLoggedIn, {Key? key}) : super(key: key);
 
   @override
+  // ignore: no_logic_in_create_state
   _SignupPageState createState() => _SignupPageState(setIsLoggedIn);
 }
 
@@ -183,16 +183,12 @@ class _SignupPageState extends State<SignupPage> {
 
   Future<bool> attemptSignup(
       String username, String email, String password) async {
-    var response = await http.post(Uri.parse(apiUrl + 'auth/signup/'),
-        body: json.encode(
-            {'username': username, 'email': email, 'password': password}),
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-        });
+    var response = await requestApi('post', 'auth/signup/',
+        data: {"username": username, "password": password});
+    final userData = response.data;
+
     if (response.statusCode == 200) {
-      final tokens = json.decode(response.body);
-      await secureStorage.write(key: 'accessToken', value: tokens['access']);
-      await secureStorage.write(key: 'refreshToken', value: tokens['refresh']);
+      await secureStorage.write(key: 'userData', value: json.encode(userData));
       setIsLoggedIn(true);
       return true;
     } else {
