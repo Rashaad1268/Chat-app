@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 const theme = MaterialColor(
   0xFF0D47A1,
@@ -16,7 +17,7 @@ const theme = MaterialColor(
   },
 );
 
-const apiUrl = 'http://127.0.0.1:8000/api/';
+const secureStorage = FlutterSecureStorage();
 
 final emailRegex = RegExp(
     r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$');
