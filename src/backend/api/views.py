@@ -84,7 +84,7 @@ class MessageViewSet(viewsets.ModelViewSet):
 
     def create(self, request, channel_pk):
         if not isinstance(request.data, dict):
-            return Response(status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+            return Response({"message": "Invalid POST data"}, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
     
         data = dict(**request.data)
         data["author"] = request.user.id
@@ -93,3 +93,15 @@ class MessageViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         message = serializer.save()
         return Response(MessageSerializer(instance=message).data)
+
+    def list(self, request, channel_pk):
+        start = request.query_params.get("start", 0)
+        stop = request.query_params.get("stop", 50)  # By default return the last 50 messages
+
+        try:
+            start = int(start)
+            stop = int(stop)
+        except ValueError:
+            return Response({"message": "Invalid query parameters"}, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+
+        return Response(MessageSerializer(self.get_queryset()[start:stop], many=True).data)
