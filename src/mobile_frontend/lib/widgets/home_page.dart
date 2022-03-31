@@ -13,7 +13,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   Map<String, dynamic> userData = {};
-  Map<int, dynamic> chatGroups = {};
+  Map<dynamic, dynamic> chatGroups = {};
   bool isLoggedIn = true;
 
   @override
@@ -42,16 +42,33 @@ class _HomePageState extends State<HomePage> {
       return false;
     }
 
-    var response = await requestApi('post', 'auth/token/verify/',
+    var response = await requestApiAndUpdateTokens(
+        'post', 'auth/token/verify/', tokens, setTokens, setIsLoggedIn,
         data: {'token': tokens['access']});
 
-    return response.data.toString() == "{}";
+    return response?.data.toString() == '{}';
   }
 
   void setIsLoggedIn(bool status) {
     setState(() {
       isLoggedIn = status;
     });
+  }
+
+  void setTokens({String? access, String? refresh}) {
+    setState(() {
+      if (access != null) {
+        userData['tokens']['access'] = access;
+      }
+
+      if (refresh != null) {
+        userData['tokens']['refresh'] = refresh;
+      }
+    });
+
+    secureStorage
+        .write(key: 'userData', value: json.encode(userData))
+        .then((value) => null);
   }
 
   @override
