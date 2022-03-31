@@ -1,4 +1,4 @@
-# A Chat app made using Django and React.js
+# A Chat app made using Django and Flutter
 
 **This project is still under development,
 the React.js frontend is still not implemented and
