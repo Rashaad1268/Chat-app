@@ -1,6 +1,5 @@
 import 'package:dio/dio.dart';
-
-const apiUrl = 'http://127.0.0.1:8000/api/';
+import './constants.dart' show apiUrl;
 
 final dio = Dio(BaseOptions(baseUrl: apiUrl));
 
