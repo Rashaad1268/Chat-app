@@ -20,29 +20,28 @@ String? validatePassword(String? password) {
   if (password == null) {
     return 'Enter a password';
   }
+
+  throw Exception("Not implemented yet");
 }
 
 class LoginPage extends StatefulWidget {
-  void Function(bool) setIsLoggedIn;
-  LoginPage(this.setIsLoggedIn, {Key? key}) : super(key: key);
-
-  @override
-  _LoginPageState createState() => _LoginPageState(setIsLoggedIn);
-}
-
-class _LoginPageState extends State<LoginPage> {
-  void Function(bool) setIsLoggedIn;
+  final void Function(bool) setIsLoggedIn;
   final _formKey = GlobalKey<FormState>();
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
 
-  _LoginPageState(this.setIsLoggedIn);
+  LoginPage(this.setIsLoggedIn, {Key? key}) : super(key: key);
 
+  @override
+  _LoginPageState createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
   @override
   void dispose() {
     super.dispose();
-    emailController.dispose();
-    passwordController.dispose();
+    widget.emailController.dispose();
+    widget.passwordController.dispose();
   }
 
   Future<bool> attemptLogin(String email, String password) async {
@@ -52,14 +51,14 @@ class _LoginPageState extends State<LoginPage> {
     if (response.statusCode == 200) {
       Map<dynamic, dynamic> userData = response.data;
       await secureStorage.write(key: 'userData', value: json.encode(userData));
-      setIsLoggedIn(true);
+      widget.setIsLoggedIn(true);
       return true;
     } else if (response.statusCode == 400) {
       // Put a message saying that an account with the given credentials does not exist
-      setIsLoggedIn(false);
+      widget.setIsLoggedIn(false);
       return false;
     } else {
-      setIsLoggedIn(false);
+      widget.setIsLoggedIn(false);
       return false;
     }
   }
@@ -68,7 +67,7 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     return Scaffold(
         body: Form(
-            key: _formKey,
+            key: widget._formKey,
             child: Padding(
                 padding: const EdgeInsets.all(10),
                 child: ListView(
@@ -91,7 +90,7 @@ class _LoginPageState extends State<LoginPage> {
                     Container(
                       padding: const EdgeInsets.all(10),
                       child: TextFormField(
-                        controller: emailController,
+                        controller: widget.emailController,
                         autovalidateMode: AutovalidateMode.always,
                         validator: validateEmail,
                         decoration: const InputDecoration(
@@ -104,7 +103,7 @@ class _LoginPageState extends State<LoginPage> {
                       padding: const EdgeInsets.fromLTRB(10, 10, 10, 10),
                       child: TextField(
                         obscureText: true,
-                        controller: passwordController,
+                        controller: widget.passwordController,
                         decoration: const InputDecoration(
                           border: OutlineInputBorder(),
                           labelText: 'Password',
@@ -125,9 +124,9 @@ class _LoginPageState extends State<LoginPage> {
                           style: const ButtonStyle(),
                           child: const Text('Login'),
                           onPressed: () {
-                            if (_formKey.currentState!.validate()) {
-                              attemptLogin(emailController.text,
-                                      passwordController.text)
+                            if (widget._formKey.currentState!.validate()) {
+                              attemptLogin(widget.emailController.text,
+                                      widget.passwordController.text)
                                   .then((loginStatus) => null);
                             }
                           },
@@ -143,7 +142,7 @@ class _LoginPageState extends State<LoginPage> {
                           onPressed: () {
                             Navigator.push(context,
                                 MaterialPageRoute(builder: (ctx) {
-                              return SignupPage(setIsLoggedIn);
+                              return SignupPage(widget.setIsLoggedIn);
                             }));
                           },
                         )
@@ -156,29 +155,25 @@ class _LoginPageState extends State<LoginPage> {
 }
 
 class SignupPage extends StatefulWidget {
-  void Function(bool) setIsLoggedIn;
+  final void Function(bool) setIsLoggedIn;
+  final usernameController = TextEditingController();
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
 
   SignupPage(this.setIsLoggedIn, {Key? key}) : super(key: key);
 
   @override
   // ignore: no_logic_in_create_state
-  _SignupPageState createState() => _SignupPageState(setIsLoggedIn);
+  _SignupPageState createState() => _SignupPageState();
 }
 
 class _SignupPageState extends State<SignupPage> {
-  void Function(bool) setIsLoggedIn;
-  final usernameController = TextEditingController();
-  final emailController = TextEditingController();
-  final passwordController = TextEditingController();
-
-  _SignupPageState(this.setIsLoggedIn) : super();
-
   @override
   void dispose() {
     super.dispose();
-    usernameController.dispose();
-    emailController.dispose();
-    passwordController.dispose();
+    widget.usernameController.dispose();
+    widget.emailController.dispose();
+    widget.passwordController.dispose();
   }
 
   Future<bool> attemptSignup(
@@ -189,10 +184,10 @@ class _SignupPageState extends State<SignupPage> {
 
     if (response.statusCode == 200) {
       await secureStorage.write(key: 'userData', value: json.encode(userData));
-      setIsLoggedIn(true);
+      widget.setIsLoggedIn(true);
       return true;
     } else {
-      setIsLoggedIn(false);
+      widget.setIsLoggedIn(false);
       return false;
     }
   }
@@ -222,7 +217,7 @@ class _SignupPageState extends State<SignupPage> {
                 Container(
                   padding: const EdgeInsets.all(10),
                   child: TextField(
-                    controller: usernameController,
+                    controller: widget.usernameController,
                     decoration: const InputDecoration(
                       border: OutlineInputBorder(),
                       labelText: 'Username',
@@ -232,7 +227,7 @@ class _SignupPageState extends State<SignupPage> {
                 Container(
                   padding: const EdgeInsets.all(10),
                   child: TextField(
-                    controller: emailController,
+                    controller: widget.emailController,
                     decoration: const InputDecoration(
                       border: OutlineInputBorder(),
                       labelText: 'Email',
@@ -243,7 +238,7 @@ class _SignupPageState extends State<SignupPage> {
                   padding: const EdgeInsets.fromLTRB(10, 10, 10, 10),
                   child: TextField(
                     obscureText: true,
-                    controller: passwordController,
+                    controller: widget.passwordController,
                     decoration: const InputDecoration(
                       border: OutlineInputBorder(),
                       labelText: 'Password',
@@ -256,8 +251,10 @@ class _SignupPageState extends State<SignupPage> {
                     child: ElevatedButton(
                       child: const Text('Signup'),
                       onPressed: () {
-                        attemptSignup(usernameController.text,
-                                emailController.text, passwordController.text)
+                        attemptSignup(
+                                widget.usernameController.text,
+                                widget.emailController.text,
+                                widget.passwordController.text)
                             .then((signupStatus) => null);
                         Navigator.pop(context);
                       },
@@ -274,7 +271,7 @@ class _SignupPageState extends State<SignupPage> {
                       onPressed: () {
                         Navigator.push(context,
                             MaterialPageRoute(builder: (ctx) {
-                          return LoginPage(setIsLoggedIn);
+                          return LoginPage(widget.setIsLoggedIn);
                         }));
                       },
                     )
