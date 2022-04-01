@@ -19,5 +19,8 @@ const theme = MaterialColor(
 
 const secureStorage = FlutterSecureStorage();
 
+const apiUrl = 'http://127.0.0.1:8000/api/';
+const websocketUrl = 'ws://127.0.0.1:8000/api/ws/';
+
 final emailRegex = RegExp(
     r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$');
