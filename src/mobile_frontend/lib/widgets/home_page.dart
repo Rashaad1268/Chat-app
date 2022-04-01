@@ -1,37 +1,70 @@
 import 'dart:convert' show json;
+
 import 'package:flutter/material.dart';
-import 'package:mobile_frontend/widgets/authentication.dart';
 import 'package:mobile_frontend/api.dart';
-import '../constants.dart' show secureStorage;
+import 'package:mobile_frontend/widgets/authentication.dart';
+import 'package:mobile_frontend/widgets/side_bar.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
+
+import '../constants.dart' show secureStorage, websocketUrl;
 
 class HomePage extends StatefulWidget {
-  const HomePage({Key? key}) : super(key: key);
+  Map<String, dynamic> userData = {};
+  List chatGroups = [];
+  bool isLoggedIn = true;
+  late final WebSocketChannel? ws;
+
+  HomePage({Key? key}) : super(key: key);
 
   @override
   _HomePageState createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
-  Map<String, dynamic> userData = {};
-  Map<dynamic, dynamic> chatGroups = {};
-  bool isLoggedIn = true;
-
   @override
   void initState() {
     super.initState();
 
-    verifyToken().then((bool result) => {setIsLoggedIn(result)});
-    secureStorage.read(key: 'userData').then((data) => setState((() {
+    verifyToken().then((bool? result) {
+      if (result != null) setIsLoggedIn(result);
+
+      secureStorage.read(key: 'userData').then((data) {
+        setState((() {
           if (data != null) {
-            userData = json.decode(data);
+            widget.userData = json.decode(data);
+            widget.ws = WebSocketChannel.connect(Uri.parse(websocketUrl +
+                '?token=${widget.userData['tokens']['access']}'));
           } else {
             // the user data does not exist for some reason
             setIsLoggedIn(false); // so make the user login again
           }
-        })));
+        }));
+
+        widget.ws?.stream.listen(handleWebsocket);
+      });
+    });
   }
 
-  Future<bool> verifyToken() async {
+  @override
+  void dispose() {
+    super.dispose();
+    widget.ws?.sink.close();
+  }
+
+  Future<void> handleWebsocket(dynamic data) async {
+    final jsonData = json.decode(data);
+    final eventName = jsonData['event'];
+
+    if (eventName == 'READY') {
+      setState(() {
+        widget.chatGroups = jsonData['payload']['chat_groups'];
+      });
+    } else {
+      print(data);
+    }
+  }
+
+  Future<bool?> verifyToken() async {
     final tokenString = await secureStorage.read(key: 'userData');
 
     if (tokenString == null) return false;
@@ -46,41 +79,44 @@ class _HomePageState extends State<HomePage> {
         'post', 'auth/token/verify/', tokens, setTokens, setIsLoggedIn,
         data: {'token': tokens['access']});
 
-    return response?.data.toString() == '{}';
+    if (response == null) return null;
+
+    return response.data.toString() == '{}';
   }
 
   void setIsLoggedIn(bool status) {
     setState(() {
-      isLoggedIn = status;
+      widget.isLoggedIn = status;
     });
   }
 
   void setTokens({String? access, String? refresh}) {
     setState(() {
       if (access != null) {
-        userData['tokens']['access'] = access;
+        widget.userData['tokens']['access'] = access;
       }
 
       if (refresh != null) {
-        userData['tokens']['refresh'] = refresh;
+        widget.userData['tokens']['refresh'] = refresh;
       }
     });
 
     secureStorage
-        .write(key: 'userData', value: json.encode(userData))
+        .write(key: 'userData', value: json.encode(widget.userData))
         .then((value) => null);
   }
 
   @override
   Widget build(BuildContext context) {
-    if (isLoggedIn == false) {
+    if (widget.isLoggedIn == false) {
       return LoginPage(setIsLoggedIn);
     }
 
-    String username = userData['username']
+    String username = widget.userData['username']
         .toString(); // userData['username'] maybe null so lets cast it to string
 
     return Scaffold(
+        drawer: ChatGroupSideBar(widget.chatGroups),
         body: Align(
             child: Text(
               "Hello $username",
