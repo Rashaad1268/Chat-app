@@ -6,11 +6,11 @@ from base.models import ChatGroup
 from .serializers import UserSerializer, ChatGroupSerializer
 
 
-def full_user_profile_data(user, *, chat_groups_key="chat_groups"):
+def full_user_profile_data(user, *, user_data_key="user", chat_groups_data_key="chat_groups"):
     user_data = UserSerializer(user).data
     chat_groups_data = ChatGroupSerializer(ChatGroup.objects.filter(member__user__id=user.id), many=True).data
 
-    return {**user_data, chat_groups_key: chat_groups_data}
+    return {user_data_key: user_data, chat_groups_data_key: chat_groups_data}
 
 
 class ChatConsumer(WebsocketConsumer):
