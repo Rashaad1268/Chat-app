@@ -1,7 +1,6 @@
-import 'dart:convert' show json;
 import 'package:flutter/material.dart';
 import '../api.dart';
-import '../constants.dart' show emailRegex, secureStorage;
+import '../constants.dart' show emailRegex;
 
 String? validateEmail(String? email) {
   if (email == null || emailRegex.hasMatch(email) == false) {
@@ -26,11 +25,13 @@ String? validatePassword(String? password) {
 
 class LoginPage extends StatefulWidget {
   final void Function(bool) setIsLoggedIn;
+  final void Function({String? access, String? refresh, bool reconnectWs})
+      setTokens;
   final _formKey = GlobalKey<FormState>();
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
 
-  LoginPage(this.setIsLoggedIn, {Key? key}) : super(key: key);
+  LoginPage(this.setIsLoggedIn, this.setTokens, {Key? key}) : super(key: key);
 
   @override
   _LoginPageState createState() => _LoginPageState();
@@ -46,11 +47,14 @@ class _LoginPageState extends State<LoginPage> {
 
   Future<bool> attemptLogin(String email, String password) async {
     var response = await requestApi('post', 'auth/token/',
-        data: {"email": email, "password": password});
+        data: {'email': email, 'password': password});
 
     if (response.statusCode == 200) {
-      Map<dynamic, dynamic> userData = response.data;
-      await secureStorage.write(key: 'userData', value: json.encode(userData));
+      Map<dynamic, dynamic> tokens = response.data['tokens'];
+      widget.setTokens(
+          access: tokens['access'],
+          refresh: tokens['refresh'],
+          reconnectWs: true);
       widget.setIsLoggedIn(true);
       return true;
     } else if (response.statusCode == 400) {
@@ -142,7 +146,8 @@ class _LoginPageState extends State<LoginPage> {
                           onPressed: () {
                             Navigator.push(context,
                                 MaterialPageRoute(builder: (ctx) {
-                              return SignupPage(widget.setIsLoggedIn);
+                              return SignupPage(
+                                  widget.setIsLoggedIn, widget.setTokens);
                             }));
                           },
                         )
@@ -156,14 +161,15 @@ class _LoginPageState extends State<LoginPage> {
 
 class SignupPage extends StatefulWidget {
   final void Function(bool) setIsLoggedIn;
+  final void Function({String? access, String? refresh, bool reconnectWs})
+      setTokens;
   final usernameController = TextEditingController();
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
 
-  SignupPage(this.setIsLoggedIn, {Key? key}) : super(key: key);
+  SignupPage(this.setIsLoggedIn, this.setTokens, {Key? key}) : super(key: key);
 
   @override
-  // ignore: no_logic_in_create_state
   _SignupPageState createState() => _SignupPageState();
 }
 
@@ -179,11 +185,14 @@ class _SignupPageState extends State<SignupPage> {
   Future<bool> attemptSignup(
       String username, String email, String password) async {
     var response = await requestApi('post', 'auth/signup/',
-        data: {"username": username, "password": password});
-    final userData = response.data;
+        data: {'username': username, 'password': password});
 
     if (response.statusCode == 200) {
-      await secureStorage.write(key: 'userData', value: json.encode(userData));
+      Map<dynamic, dynamic> tokens = response.data['tokens'];
+      widget.setTokens(
+          access: tokens['access'],
+          refresh: tokens['refresh'],
+          reconnectWs: true);
       widget.setIsLoggedIn(true);
       return true;
     } else {
@@ -271,7 +280,8 @@ class _SignupPageState extends State<SignupPage> {
                       onPressed: () {
                         Navigator.push(context,
                             MaterialPageRoute(builder: (ctx) {
-                          return LoginPage(widget.setIsLoggedIn);
+                          return LoginPage(
+                              widget.setIsLoggedIn, widget.setTokens);
                         }));
                       },
                     )
