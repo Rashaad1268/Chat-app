@@ -65,10 +65,13 @@ Future<Response> requestApi(String method, String endpoint,
 }
 
 Future<String> getNewAccessToken(String refreshToken) async {
-  final response = await requestApi('post', 'auth/token/refresh/',
-      data: {'refresh': refreshToken});
-
-  if (response.statusCode == 401) throw InvalidRefreshToken();
+  Response? response;
+  try {
+    response = await requestApi('post', 'auth/token/refresh/',
+        data: {'refresh': refreshToken});
+  } on InvalidAccessToken {
+    throw InvalidRefreshToken();
+  }
 
   return response.data['access'];
 }
@@ -82,12 +85,11 @@ Future<Response?> requestApiAndUpdateTokens(String method, String endpoint,
   Same as requestApi but if the access token is expired generate a new access token using the refresh token.
   if the refresh token is expired promt the user to login again
   */
+  Response? apiResponse;
 
   try {
-    final apiResponse = await requestApi(method, endpoint,
+    apiResponse = await requestApi(method, endpoint,
         headers: headers, queryParams: queryParams, data: data);
-
-    return apiResponse;
   } on InvalidAccessToken {
     print("invalid access token");
     getNewAccessToken(tokens['refresh']).then((newAccessToken) {
@@ -102,4 +104,6 @@ Future<Response?> requestApiAndUpdateTokens(String method, String endpoint,
       }
     });
   }
+
+  return apiResponse;
 }
