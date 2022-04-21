@@ -12,7 +12,8 @@ class HomePage extends StatefulWidget {
   Map<String, dynamic> userData = {};
   List chatGroups = [];
   bool isLoggedIn = true;
-  late final WebSocketChannel? ws;
+  bool isLoading = true;
+  WebSocketChannel? ws;
 
   HomePage({Key? key}) : super(key: key);
 
@@ -28,12 +29,13 @@ class _HomePageState extends State<HomePage> {
     verifyToken().then((bool? result) {
       if (result != null) setIsLoggedIn(result);
 
-      secureStorage.read(key: 'userData').then((data) {
+      secureStorage.read(key: 'tokens').then((tokenData) {
         setState((() {
-          if (data != null) {
-            widget.userData = json.decode(data);
-            widget.ws = WebSocketChannel.connect(Uri.parse(websocketUrl +
-                '?token=${widget.userData['tokens']['access']}'));
+          if (tokenData != null) {
+            if (result == true) {
+              widget.ws = WebSocketChannel.connect(Uri.parse(
+                  websocketUrl + '?token=${json.decode(tokenData)['access']}'));
+            }
           } else {
             // the user data does not exist for some reason
             setIsLoggedIn(false); // so make the user login again
@@ -57,7 +59,10 @@ class _HomePageState extends State<HomePage> {
 
     if (eventName == 'READY') {
       setState(() {
+        print(jsonData);
+        widget.userData = jsonData['payload']['user'];
         widget.chatGroups = jsonData['payload']['chat_groups'];
+        widget.isLoading = false;
       });
     } else {
       print(data);
@@ -65,13 +70,13 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<bool?> verifyToken() async {
-    final tokenString = await secureStorage.read(key: 'userData');
+    final tokenString = await secureStorage.read(key: 'tokens');
 
     if (tokenString == null) return false;
 
-    final tokens = json.decode(tokenString)['tokens'];
+    final Map tokens = json.decode(tokenString);
 
-    if (tokens == null) {
+    if (tokens.isEmpty) {
       return false;
     }
 
@@ -90,7 +95,8 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  void setTokens({String? access, String? refresh}) {
+  void setTokens({String? access, String? refresh, bool reconnectWs = false}) {
+    widget.userData.putIfAbsent('tokens', () => {});
     setState(() {
       if (access != null) {
         widget.userData['tokens']['access'] = access;
@@ -99,17 +105,28 @@ class _HomePageState extends State<HomePage> {
       if (refresh != null) {
         widget.userData['tokens']['refresh'] = refresh;
       }
+
+      if (reconnectWs) {
+        widget.ws = WebSocketChannel.connect(Uri.parse(
+            websocketUrl + '?token=${widget.userData['tokens']['access']}'));
+        widget.ws?.stream.listen(handleWebsocket);
+      }
     });
 
-    secureStorage
-        .write(key: 'userData', value: json.encode(widget.userData))
-        .then((value) => null);
+    secureStorage.write(
+        key: 'tokens', value: json.encode(widget.userData['tokens']));
   }
 
   @override
   Widget build(BuildContext context) {
     if (widget.isLoggedIn == false) {
-      return LoginPage(setIsLoggedIn);
+      return LoginPage(setIsLoggedIn, setTokens);
+    }
+
+    if (widget.isLoading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
     }
 
     String username = widget.userData['username']
