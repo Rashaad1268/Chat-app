@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../api.dart';
-import '../constants.dart' show emailRegex;
+import '../utils/api.dart';
+import '../utils/constants.dart' show emailRegex;
 
 String? validateEmail(String? email) {
   if (email == null || emailRegex.hasMatch(email) == false) {
