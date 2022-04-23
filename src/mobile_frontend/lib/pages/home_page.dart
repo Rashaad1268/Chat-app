@@ -26,24 +26,17 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
 
-    verifyToken().then((bool? result) {
+    verifyToken(setTheTokens: true).then((bool? result) {
       if (result != null) setIsLoggedIn(result);
 
-      secureStorage.read(key: 'tokens').then((tokenData) {
-        setState((() {
-          if (tokenData != null) {
-            if (result == true) {
-              widget.ws = WebSocketChannel.connect(Uri.parse(
-                  websocketUrl + '?token=${json.decode(tokenData)['access']}'));
-            }
-          } else {
-            // the user data does not exist for some reason
-            setIsLoggedIn(false); // so make the user login again
-          }
-        }));
+      setState((() {
+        if (result == true) {
+          widget.ws = WebSocketChannel.connect(Uri.parse(
+              websocketUrl + '?token=${widget.userData['tokens']['access']}'));
+        }
+      }));
 
-        widget.ws?.stream.listen(handleWebsocket);
-      });
+      widget.ws?.stream.listen(handleWebsocket);
     });
   }
 
@@ -59,7 +52,7 @@ class _HomePageState extends State<HomePage> {
 
     if (eventName == 'READY') {
       setState(() {
-        print(jsonData);
+        // print(jsonData);
         widget.userData = jsonData['payload']['user'];
         widget.chatGroups = jsonData['payload']['chat_groups'];
         widget.isLoading = false;
@@ -69,7 +62,7 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  Future<bool?> verifyToken() async {
+  Future<bool?> verifyToken({bool setTheTokens = false}) async {
     final tokenString = await secureStorage.read(key: 'tokens');
 
     if (tokenString == null) return false;
@@ -80,9 +73,13 @@ class _HomePageState extends State<HomePage> {
       return false;
     }
 
+    if (setTheTokens) {
+      setTokens(access: tokens['access'], refresh: tokens['refresh']);
+    }
+
     var response = await requestApiAndUpdateTokens(
         'post', 'auth/token/verify/', tokens, setTokens, setIsLoggedIn,
-        data: {'token': tokens['access']});
+        data: {'token': tokens['access']}, reconnectWs: true);
 
     if (response == null) return null;
 
@@ -107,6 +104,15 @@ class _HomePageState extends State<HomePage> {
       }
 
       if (reconnectWs) {
+        if (widget.ws != null) {
+          try {
+          widget.ws?.sink.close();
+          } catch (e) {
+            // ignore any errors while closing previous websocket connection
+            // but im not sure if we even need to close the previous connection
+            // widget.ws = newInstance should be enough but I don't know if it may cause any problems
+          }
+        }
         widget.ws = WebSocketChannel.connect(Uri.parse(
             websocketUrl + '?token=${widget.userData['tokens']['access']}'));
         widget.ws?.stream.listen(handleWebsocket);

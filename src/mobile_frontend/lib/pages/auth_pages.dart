@@ -55,6 +55,7 @@ class _LoginPageState extends State<LoginPage> {
           access: tokens['access'],
           refresh: tokens['refresh'],
           reconnectWs: true);
+
       widget.setIsLoggedIn(true);
       return true;
     } else if (response.statusCode == 400) {

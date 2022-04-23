@@ -80,7 +80,7 @@ Future<Response?> requestApiAndUpdateTokens(String method, String endpoint,
     Map tokens, Function setTokens, Function setIsLoggedIn,
     {Map<String, dynamic>? headers,
     Map<String, dynamic>? queryParams,
-    Map<String, dynamic>? data}) async {
+    Map<String, dynamic>? data, bool reconnectWs=false}) async {
   /*
   Same as requestApi but if the access token is expired generate a new access token using the refresh token.
   if the refresh token is expired promt the user to login again
@@ -93,7 +93,7 @@ Future<Response?> requestApiAndUpdateTokens(String method, String endpoint,
   } on InvalidAccessToken {
     print("invalid access token");
     getNewAccessToken(tokens['refresh']).then((newAccessToken) {
-      setTokens(access: newAccessToken);
+      setTokens(access: newAccessToken, reconnectWs: reconnectWs);
     }).catchError((error) {
       if (error.runtimeType == InvalidRefreshToken) {
         print("invalid refresh token");
