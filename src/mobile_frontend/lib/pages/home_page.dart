@@ -3,7 +3,7 @@ import 'dart:convert' show json;
 import 'package:flutter/material.dart';
 import 'package:mobile_frontend/utils/api.dart';
 import 'package:mobile_frontend/pages/auth_pages.dart';
-import 'package:mobile_frontend/widgets/side_bar.dart';
+import 'package:mobile_frontend/widgets/drawer.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 import '../utils/constants.dart' show secureStorage, websocketUrl;
@@ -140,7 +140,7 @@ class _HomePageState extends State<HomePage> {
 
     return Scaffold(
         appBar: AppBar(title: const Text("Chat app")),
-        drawer: ChatGroupSideBar(widget.chatGroups),
+        drawer: ChatGroupDrawer(widget.chatGroups),
         body: Align(
             child: Text(
               "Hello $username",
