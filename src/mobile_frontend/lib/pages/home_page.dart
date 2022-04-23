@@ -1,12 +1,12 @@
 import 'dart:convert' show json;
 
 import 'package:flutter/material.dart';
-import 'package:mobile_frontend/api.dart';
+import 'package:mobile_frontend/utils/api.dart';
 import 'package:mobile_frontend/pages/auth_pages.dart';
 import 'package:mobile_frontend/widgets/side_bar.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
-import '../constants.dart' show secureStorage, websocketUrl;
+import '../utils/constants.dart' show secureStorage, websocketUrl;
 
 class HomePage extends StatefulWidget {
   Map<String, dynamic> userData = {};
@@ -106,7 +106,7 @@ class _HomePageState extends State<HomePage> {
       if (reconnectWs) {
         if (widget.ws != null) {
           try {
-          widget.ws?.sink.close();
+            widget.ws?.sink.close();
           } catch (e) {
             // ignore any errors while closing previous websocket connection
             // but im not sure if we even need to close the previous connection
@@ -139,6 +139,7 @@ class _HomePageState extends State<HomePage> {
         .toString(); // userData['username'] maybe null so lets cast it to string
 
     return Scaffold(
+        appBar: AppBar(title: const Text("Chat app")),
         drawer: ChatGroupSideBar(widget.chatGroups),
         body: Align(
             child: Text(
