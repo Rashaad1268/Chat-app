@@ -2,6 +2,17 @@ import 'package:flutter/material.dart';
 import '../utils/api.dart';
 import '../utils/constants.dart' show emailRegex;
 
+String? validateUsername(String? username) {
+  if (username == null) {
+    return "Username can't be empty";
+  } else if (username.length <= 1) {
+    return 'Username should be atleast 2 characters';
+  } else if (username.length > 10) {
+    return "Username can't be longer than 10 characters";
+  }
+  return null;
+}
+
 String? validateEmail(String? email) {
   if (email == null || emailRegex.hasMatch(email) == false) {
     return 'Enter a valid email';
@@ -167,6 +178,7 @@ class SignupPage extends StatefulWidget {
   final usernameController = TextEditingController();
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
 
   SignupPage(this.setIsLoggedIn, this.setTokens, {Key? key}) : super(key: key);
 
@@ -186,7 +198,7 @@ class _SignupPageState extends State<SignupPage> {
   Future<bool> attemptSignup(
       String username, String email, String password) async {
     var response = await requestApi('post', 'auth/signup/',
-        data: {'username': username, 'password': password});
+        data: {'username': username, 'email': email, 'password': password});
 
     if (response.statusCode == 200) {
       Map<dynamic, dynamic> tokens = response.data['tokens'];
@@ -205,90 +217,97 @@ class _SignupPageState extends State<SignupPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        body: Padding(
-            padding: const EdgeInsets.all(10),
-            child: ListView(
-              children: <Widget>[
-                Container(
-                    alignment: Alignment.center,
-                    padding: const EdgeInsets.all(10),
-                    child: const Text(
-                      'Welcome!',
-                      style:
-                          TextStyle(fontWeight: FontWeight.w500, fontSize: 25),
-                    )),
-                Container(
-                    alignment: Alignment.center,
-                    padding: const EdgeInsets.only(top: 40, bottom: 20),
-                    child: const Text(
-                      'Sign up',
-                      style: TextStyle(fontSize: 20),
-                    )),
-                Container(
+        body: Form(
+      key: widget._formKey,
+      child: Padding(
+          padding: const EdgeInsets.all(10),
+          child: ListView(
+            children: <Widget>[
+              Container(
+                  alignment: Alignment.center,
                   padding: const EdgeInsets.all(10),
-                  child: TextField(
-                    controller: widget.usernameController,
-                    decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
-                      labelText: 'Username',
-                    ),
+                  child: const Text(
+                    'Welcome!',
+                    style: TextStyle(fontWeight: FontWeight.w500, fontSize: 25),
+                  )),
+              Container(
+                  alignment: Alignment.center,
+                  padding: const EdgeInsets.only(top: 40, bottom: 20),
+                  child: const Text(
+                    'Sign up',
+                    style: TextStyle(fontSize: 20),
+                  )),
+              Container(
+                padding: const EdgeInsets.all(10),
+                child: TextFormField(
+                  controller: widget.usernameController,
+                  validator: validateUsername,
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    labelText: 'Username',
                   ),
                 ),
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  child: TextField(
-                    controller: widget.emailController,
-                    decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
-                      labelText: 'Email',
-                    ),
+              ),
+              Container(
+                padding: const EdgeInsets.all(10),
+                child: TextFormField(
+                  controller: widget.emailController,
+                  validator: validateEmail,
+                  autovalidateMode: AutovalidateMode.always,
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    labelText: 'Email',
                   ),
                 ),
-                Container(
-                  padding: const EdgeInsets.fromLTRB(10, 10, 10, 10),
-                  child: TextField(
-                    obscureText: true,
-                    controller: widget.passwordController,
-                    decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
-                      labelText: 'Password',
-                    ),
+              ),
+              Container(
+                padding: const EdgeInsets.fromLTRB(10, 10, 10, 10),
+                child: TextField(
+                  obscureText: true,
+                  controller: widget.passwordController,
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    labelText: 'Password',
                   ),
                 ),
-                Container(
-                    height: 50,
-                    padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
-                    child: ElevatedButton(
-                      child: const Text('Signup'),
-                      onPressed: () {
+              ),
+              Container(
+                  height: 50,
+                  padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
+                  child: ElevatedButton(
+                    child: const Text('Signup'),
+                    onPressed: () {
+                      if (widget._formKey.currentState!.validate()) {
                         attemptSignup(
                                 widget.usernameController.text,
                                 widget.emailController.text,
                                 widget.passwordController.text)
                             .then((signupStatus) => null);
-                        Navigator.pop(context);
-                      },
-                    )),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    const Text('Already have an accout?'),
-                    TextButton(
-                      child: const Text(
-                        'Login',
-                        style: TextStyle(fontSize: 14),
-                      ),
-                      onPressed: () {
-                        Navigator.push(context,
-                            MaterialPageRoute(builder: (ctx) {
-                          return LoginPage(
-                              widget.setIsLoggedIn, widget.setTokens);
-                        }));
-                      },
-                    )
-                  ],
-                ),
-              ],
-            )));
+                      }
+                      Navigator.pop(context);
+                    },
+                  )),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  const Text('Already have an accout?'),
+                  TextButton(
+                    child: const Text(
+                      'Login',
+                      style: TextStyle(fontSize: 14),
+                    ),
+                    onPressed: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (ctx) {
+                        return LoginPage(
+                            widget.setIsLoggedIn, widget.setTokens);
+                      }));
+                    },
+                  )
+                ],
+              ),
+            ],
+          )),
+    ));
   }
 }
