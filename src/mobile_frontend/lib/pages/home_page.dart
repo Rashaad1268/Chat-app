@@ -3,18 +3,13 @@ import 'dart:convert' show json;
 import 'package:flutter/material.dart';
 import 'package:mobile_frontend/utils/api.dart';
 import 'package:mobile_frontend/pages/auth_pages.dart';
-import 'package:mobile_frontend/widgets/drawer.dart';
+import 'package:mobile_frontend/widgets/chat_group_list.dart';
+import 'package:mobile_frontend/widgets/bottom_navbar.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 import '../utils/constants.dart' show secureStorage, websocketUrl;
 
 class HomePage extends StatefulWidget {
-  Map<String, dynamic> userData = {};
-  List chatGroups = [];
-  bool isLoggedIn = true;
-  bool isLoading = true;
-  WebSocketChannel? ws;
-
   HomePage({Key? key}) : super(key: key);
 
   @override
@@ -22,6 +17,13 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  Map<String, dynamic> userData = {};
+  List chatGroups = [];
+  bool isLoggedIn = true;
+  bool isLoading = true;
+  int bottomNavbarIndex = 0;
+  WebSocketChannel? ws;
+
   @override
   void initState() {
     super.initState();
@@ -31,19 +33,19 @@ class _HomePageState extends State<HomePage> {
 
       setState((() {
         if (result == true) {
-          widget.ws = WebSocketChannel.connect(Uri.parse(
-              websocketUrl + '?token=${widget.userData['tokens']['access']}'));
+          ws = WebSocketChannel.connect(Uri.parse(
+              websocketUrl + '?token=${userData['tokens']['access']}'));
         }
       }));
 
-      widget.ws?.stream.listen(handleWebsocket);
+      ws?.stream.listen(handleWebsocket);
     });
   }
 
   @override
   void dispose() {
     super.dispose();
-    widget.ws?.sink.close();
+    ws?.sink.close();
   }
 
   Future<void> handleWebsocket(dynamic data) async {
@@ -53,9 +55,9 @@ class _HomePageState extends State<HomePage> {
     if (eventName == 'READY') {
       setState(() {
         // print(jsonData);
-        widget.userData = jsonData['payload']['user'];
-        widget.chatGroups = jsonData['payload']['chat_groups'];
-        widget.isLoading = false;
+        userData = jsonData['payload']['user'];
+        chatGroups = jsonData['payload']['chat_groups'];
+        isLoading = false;
       });
     } else {
       print(data);
@@ -88,64 +90,62 @@ class _HomePageState extends State<HomePage> {
 
   void setIsLoggedIn(bool status) {
     setState(() {
-      widget.isLoggedIn = status;
+      isLoggedIn = status;
     });
   }
 
   void setTokens({String? access, String? refresh, bool reconnectWs = false}) {
-    widget.userData.putIfAbsent('tokens', () => {});
+    userData.putIfAbsent('tokens', () => {});
     setState(() {
       if (access != null) {
-        widget.userData['tokens']['access'] = access;
+        userData['tokens']['access'] = access;
       }
 
       if (refresh != null) {
-        widget.userData['tokens']['refresh'] = refresh;
+        userData['tokens']['refresh'] = refresh;
       }
 
       if (reconnectWs) {
-        if (widget.ws != null) {
+        if (ws != null) {
           try {
-            widget.ws?.sink.close();
+            ws?.sink.close();
           } catch (e) {
             // ignore any errors while closing previous websocket connection
             // but im not sure if we even need to close the previous connection
-            // widget.ws = newInstance should be enough but I don't know if it may cause any problems
+            // ws = newInstance should be enough but I don't know if it may cause any problems
           }
         }
-        widget.ws = WebSocketChannel.connect(Uri.parse(
-            websocketUrl + '?token=${widget.userData['tokens']['access']}'));
-        widget.ws?.stream.listen(handleWebsocket);
+        ws = WebSocketChannel.connect(Uri.parse(
+            websocketUrl + '?token=${userData['tokens']['access']}'));
+        ws?.stream.listen(handleWebsocket);
       }
     });
 
     secureStorage.write(
-        key: 'tokens', value: json.encode(widget.userData['tokens']));
+        key: 'tokens', value: json.encode(userData['tokens']));
   }
 
   @override
   Widget build(BuildContext context) {
-    if (widget.isLoggedIn == false) {
+    if (isLoggedIn == false) {
       return LoginPage(setIsLoggedIn, setTokens);
     }
 
-    if (widget.isLoading) {
+    if (isLoading) {
       return const Scaffold(
         body: Center(child: CircularProgressIndicator()),
       );
     }
 
-    String username = widget.userData['username']
-        .toString(); // userData['username'] maybe null so lets cast it to string
+    final body = ChatGroupList(chatGroups);
 
     return Scaffold(
         appBar: AppBar(title: const Text("Chat app")),
-        drawer: ChatGroupDrawer(widget.chatGroups),
-        body: Align(
-            child: Text(
-              "Hello $username",
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            heightFactor: 15));
+        // drawer: ChatGroupDrawer(chatGroups),
+        bottomNavigationBar: BottomNavNar(
+            bottomNavbarIndex,
+            (int newIndex) =>
+                setState(() => bottomNavbarIndex = newIndex)),
+        body: body);
   }
 }
