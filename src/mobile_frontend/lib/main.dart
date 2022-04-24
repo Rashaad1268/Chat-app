@@ -12,8 +12,11 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: HomePage(),
-      );
+        debugShowCheckedModeBanner: false,
+        home: HomePage(),
+        darkTheme: ThemeData(
+          brightness: Brightness.dark,  // TODO: Check the user settings and set this value
+      ),
+    );
   }
 }
