@@ -8,12 +8,12 @@ class Tile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(child: ListTile(
+    return Card(
+        child: ListTile(
       title: Text(chatGroupData['name']),
       onTap: () {
-        Navigator.of(context).push(
-            MaterialPageRoute(
-                builder: (ctx) => ChatGroupDetail(chatGroupData)));
+        Navigator.of(context).push(MaterialPageRoute(
+            builder: (ctx) => ChatGroupDetail(chatGroupData)));
       },
       leading: CircleAvatar(
         backgroundImage:
