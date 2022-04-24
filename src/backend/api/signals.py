@@ -1,4 +1,4 @@
-from django.db.models.signals import post_save, post_delete
+from django.db.models.signals import post_save, pre_delete
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 from django.dispatch import receiver
@@ -21,7 +21,7 @@ def dispatch_message_create_and_edit(sender, instance, created, **kwargs):
                                                  "payload": MessageSerializer(instance).data})
 
 
-@receiver(post_delete, sender=Message)
+@receiver(pre_delete, sender=Message)
 def dispatch_message_delete(sender, instance, **kwargs):
     async_to_sync(channel_layer.group_send)(instance.channel.chat_group.channel_name,
                                             {"type": "chat_message_delete",
@@ -43,7 +43,7 @@ def dispatch_member_join_and_edit(sender, instance, created, **kwargs):
                                                  "payload": payload})
 
 
-@receiver(post_delete, sender=Member)
+@receiver(pre_delete, sender=Member)
 def dispatch_member_leave(sender, instance, **kwargs):
     async_to_sync(channel_layer.group_send)(instance.chat_group.channel_name,
                                             {"type": "chat_member_leave",
@@ -65,7 +65,7 @@ def dispatch_channel_create_and_edit(sender, instance, created, **kwargs):
                                                  "payload": payload})
 
 
-@receiver(post_delete, sender=Channel)
+@receiver(pre_delete, sender=Channel)
 def dispatch_channel_delete(sender, instance, **kwargs):
     async_to_sync(channel_layer.group_send)(instance.chat_group.channel_name,
                                             {"type": "chat_channel_delete",
