@@ -32,7 +32,7 @@ class ChatGroupList extends StatelessWidget {
     final diviededTiles = ListTile.divideTiles(
         context: context, tiles: chatGroups.map((e) => Tile(e))).toList();
     return ListView(
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.all(10),
       children: diviededTiles,
     );
   }
