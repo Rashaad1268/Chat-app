@@ -1,13 +1,15 @@
 import 'dart:convert' show json;
 
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:mobile_frontend/utils/api.dart';
 import 'package:mobile_frontend/pages/auth_pages.dart';
 import 'package:mobile_frontend/widgets/chat_group_list.dart';
 import 'package:mobile_frontend/widgets/bottom_navbar.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
-import '../utils/constants.dart' show secureStorage, websocketUrl;
+import '../utils/constants.dart' show websocketUrl;
 
 class HomePage extends StatefulWidget {
   HomePage({Key? key}) : super(key: key);
@@ -23,11 +25,13 @@ class _HomePageState extends State<HomePage> {
   bool isLoading = true;
   int bottomNavbarIndex = 0;
   WebSocketChannel? ws;
+  late Box storage;
 
   @override
   void initState() {
     super.initState();
 
+    storage = Hive.box('Chat-app-storage');
     verifyToken(setTheTokens: true).then((bool? result) {
       if (result != null) setIsLoggedIn(result);
 
@@ -65,7 +69,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<bool?> verifyToken({bool setTheTokens = false}) async {
-    final tokenString = await secureStorage.read(key: 'tokens');
+    final tokenString = await storage.get('tokens');
 
     if (tokenString == null) return false;
 
@@ -115,14 +119,13 @@ class _HomePageState extends State<HomePage> {
             // ws = newInstance should be enough but I don't know if it may cause any problems
           }
         }
-        ws = WebSocketChannel.connect(Uri.parse(
-            websocketUrl + '?token=${userData['tokens']['access']}'));
+        ws = WebSocketChannel.connect(
+            Uri.parse(websocketUrl + '?token=${userData['tokens']['access']}'));
         ws?.stream.listen(handleWebsocket);
       }
     });
 
-    secureStorage.write(
-        key: 'tokens', value: json.encode(userData['tokens']));
+    storage.put('tokens', json.encode(userData['tokens']));
   }
 
   @override
@@ -142,10 +145,8 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
         appBar: AppBar(title: const Text("Chat app")),
         // drawer: ChatGroupDrawer(chatGroups),
-        bottomNavigationBar: BottomNavNar(
-            bottomNavbarIndex,
-            (int newIndex) =>
-                setState(() => bottomNavbarIndex = newIndex)),
+        bottomNavigationBar: BottomNavNar(bottomNavbarIndex,
+            (int newIndex) => setState(() => bottomNavbarIndex = newIndex)),
         body: body);
   }
 }

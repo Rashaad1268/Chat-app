@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+
 
 const theme = MaterialColor(
   0xFF0D47A1,
@@ -16,8 +17,6 @@ const theme = MaterialColor(
     900: Color(0xFF0D47A1),
   },
 );
-
-const secureStorage = FlutterSecureStorage();
 
 const apiUrl = 'http://127.0.0.1:8000/api/';
 const websocketUrl = 'ws://127.0.0.1:8000/api/ws/';
