@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 
 
 class DrawerTile extends StatelessWidget {
-  Map<String, dynamic> chatGroupData;
-  DrawerTile(this.chatGroupData, {Key? key}) : super(key: key);
+  final Map<String, dynamic> chatGroupData;
+  const DrawerTile(this.chatGroupData, {Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

@@ -34,6 +34,12 @@ String? validatePassword(String? password) {
   throw Exception("Not implemented yet");
 }
 
+String? validatePasswords(String password1, String? password2) {
+  if (password1 != password2) {
+    return "Passwords don't match. Check the passwords you entered";
+  }
+}
+
 class LoginPage extends StatefulWidget {
   final void Function(bool) setIsLoggedIn;
   final void Function({String? access, String? refresh, bool reconnectWs})
@@ -178,6 +184,7 @@ class SignupPage extends StatefulWidget {
   final usernameController = TextEditingController();
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
+  final password2Controller = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
   SignupPage(this.setIsLoggedIn, this.setTokens, {Key? key}) : super(key: key);
@@ -193,10 +200,13 @@ class _SignupPageState extends State<SignupPage> {
     widget.usernameController.dispose();
     widget.emailController.dispose();
     widget.passwordController.dispose();
+    widget.password2Controller.dispose();
   }
 
-  Future<bool> attemptSignup(
-      String username, String email, String password) async {
+  Future<bool> attemptSignup() async {
+    final username = widget.usernameController.text;
+    final email = widget.emailController.text;
+    final password = widget.passwordController.text;
     var response = await requestApi('post', 'auth/signup/',
         data: {'username': username, 'email': email, 'password': password});
 
@@ -263,12 +273,25 @@ class _SignupPageState extends State<SignupPage> {
               ),
               Container(
                 padding: const EdgeInsets.fromLTRB(10, 10, 10, 10),
-                child: TextField(
+                child: TextFormField(
                   obscureText: true,
                   controller: widget.passwordController,
                   decoration: const InputDecoration(
                     border: OutlineInputBorder(),
                     labelText: 'Password',
+                  ),
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.fromLTRB(10, 10, 10, 10),
+                child: TextFormField(
+                  obscureText: true,
+                  controller: widget.password2Controller,
+                  validator: (password2) => validatePasswords(
+                      widget.passwordController.text, password2),
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    labelText: 'Password 2',
                   ),
                 ),
               ),
@@ -279,13 +302,9 @@ class _SignupPageState extends State<SignupPage> {
                     child: const Text('Signup'),
                     onPressed: () {
                       if (widget._formKey.currentState!.validate()) {
-                        attemptSignup(
-                                widget.usernameController.text,
-                                widget.emailController.text,
-                                widget.passwordController.text)
-                            .then((signupStatus) => null);
+                        attemptSignup();
+                        Navigator.pop(context);
                       }
-                      Navigator.pop(context);
                     },
                   )),
               Row(
@@ -298,10 +317,7 @@ class _SignupPageState extends State<SignupPage> {
                       style: TextStyle(fontSize: 14),
                     ),
                     onPressed: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (ctx) {
-                        return LoginPage(
-                            widget.setIsLoggedIn, widget.setTokens);
-                      }));
+                      Navigator.pop(context);
                     },
                   )
                 ],

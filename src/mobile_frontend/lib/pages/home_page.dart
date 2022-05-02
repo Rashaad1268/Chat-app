@@ -3,6 +3,7 @@ import 'dart:convert' show json;
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:mobile_frontend/pages/settings_page.dart';
 import 'package:mobile_frontend/utils/api.dart';
 import 'package:mobile_frontend/pages/auth_pages.dart';
 import 'package:mobile_frontend/widgets/chat_group_list.dart';
@@ -140,10 +141,19 @@ class _HomePageState extends State<HomePage> {
       );
     }
 
-    final body = ChatGroupList(chatGroups);
+    var body;
+
+    switch (bottomNavbarIndex) {
+      case 0:
+        body = ChatGroupList(chatGroups);
+        break;
+
+      case 1:
+        body = SettingsPage();
+    }
 
     return Scaffold(
-        appBar: AppBar(title: const Text("Chat app")),
+        appBar: AppBar(title: const Text('Chat app')),
         // drawer: ChatGroupDrawer(chatGroups),
         bottomNavigationBar: BottomNavNar(bottomNavbarIndex,
             (int newIndex) => setState(() => bottomNavbarIndex = newIndex)),

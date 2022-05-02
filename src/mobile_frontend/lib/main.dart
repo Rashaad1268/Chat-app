@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:mobile_frontend/utils/constants.dart';
 import 'pages/home_page.dart';
+import 'utils/colors.dart';
 
 void main() async {
   await Hive.initFlutter();
   await Hive.openBox('Chat-app-storage');
+  await Hive.openBox('Chat-app-settings');
   runApp(const MyApp());
 }
 
@@ -14,13 +17,22 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: HomePage(),
-      darkTheme: ThemeData(
-        brightness:
-            Brightness.dark, // TODO: Check the user settings and set this value
-      ),
-    );
+    return ValueListenableBuilder(
+        valueListenable: Hive.box('Chat-app-settings').listenable(),
+        builder: (context, Box box, widget) {
+          return MaterialApp(
+            debugShowCheckedModeBanner: false,
+            home: HomePage(),
+            theme: ThemeData(
+              brightness: box.get('isDarkMode', defaultValue: true)
+                  ? Brightness.dark
+                  : Brightness.light,
+              primarySwatch: createTheme(fromListRGBO(
+                      box.get('theme', defaultValue: [1.0, 33, 150, 243]))
+                  .value
+                  .toInt()),
+            ),
+          );
+        });
   }
 }
