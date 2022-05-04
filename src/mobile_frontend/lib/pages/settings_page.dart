@@ -22,14 +22,13 @@ class _SettingsPageState extends State<SettingsPage> {
     box = Hive.box('Chat-app-settings');
     isDarkMode = box.get('isDarkMode', defaultValue: true);
     theme =
-        fromListRGBO(box.get('theme', defaultValue: const [1.0, 33, 150, 243]));
+        fromListARGB(box.get('theme', defaultValue: const [255, 33, 150, 243]));
   }
 
   void changeMode(bool newMode) {
     setState(() {
       isDarkMode = newMode;
     });
-    // print(theme);
     box.put('isDarkMode', newMode);
   }
 
@@ -55,16 +54,12 @@ class _SettingsPageState extends State<SettingsPage> {
                 colorPickerWidth: 300,
                 pickerAreaHeightPercent: 0.7,
                 enableAlpha: true,
-                // labelTypes: true,
                 displayThumbColor: true,
-                // paletteType: true,
                 pickerAreaBorderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(2),
                   topRight: Radius.circular(2),
                 ),
                 hexInputBar: true,
-                // colorHistory: widget.colorHistory,
-                // onHistoryChanged: widget.onHistoryChanged,
               ),
             ),
           );
@@ -81,6 +76,7 @@ class _SettingsPageState extends State<SettingsPage> {
           onChanged: changeMode),
       ListTile(
           title: const Text('Theme'),
+          onTap: showColorPicker,
           trailing: ElevatedButton(
               style: ElevatedButton.styleFrom(primary: theme),
               child: const SizedBox.shrink(),
