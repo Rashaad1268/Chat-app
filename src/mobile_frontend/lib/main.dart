@@ -27,8 +27,8 @@ class MyApp extends StatelessWidget {
               brightness: box.get('isDarkMode', defaultValue: true)
                   ? Brightness.dark
                   : Brightness.light,
-              primarySwatch: createTheme(fromListRGBO(
-                      box.get('theme', defaultValue: [1.0, 33, 150, 243]))
+              primarySwatch: createTheme(fromListARGB(
+                      box.get('theme', defaultValue: const [255, 33, 150, 243]))
                   .value
                   .toInt()),
             ),
