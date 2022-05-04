@@ -13,15 +13,17 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 import '../utils/constants.dart' show websocketUrl;
 
 class HomePage extends StatefulWidget {
-  HomePage({Key? key}) : super(key: key);
+  const HomePage({Key? key}) : super(key: key);
 
   @override
   _HomePageState createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
-  Map<String, dynamic> userData = {};
+  late APIClient apiClient;
+  Map userData = {};
   List chatGroups = [];
+  Map<String, List<Map>> channelMessages = {};
   bool isLoggedIn = true;
   bool isLoading = true;
   int bottomNavbarIndex = 0;
@@ -38,6 +40,7 @@ class _HomePageState extends State<HomePage> {
 
       setState((() {
         if (result == true) {
+          apiClient = APIClient(userData, setTokens);
           ws = WebSocketChannel.connect(Uri.parse(
               websocketUrl + '?token=${userData['tokens']['access']}'));
         }
@@ -117,7 +120,7 @@ class _HomePageState extends State<HomePage> {
           } catch (e) {
             // ignore any errors while closing previous websocket connection
             // but im not sure if we even need to close the previous connection
-            // ws = newInstance should be enough but I don't know if it may cause any problems
+            // ws = newInstance should be enough but I don't know if not closing the previous may cause any problems
           }
         }
         ws = WebSocketChannel.connect(
@@ -127,6 +130,24 @@ class _HomePageState extends State<HomePage> {
     });
 
     storage.put('tokens', json.encode(userData['tokens']));
+  }
+
+  void setChannelMessages(String id,
+      {List<Map>? newMessages, Map? newMessage, required bool addMany}) {
+    if (newMessages == null && newMessage == null) {
+      throw Exception(
+          "At least newMessages or newMessage needs to be specified");
+    } else if (newMessages != null && newMessage != null) {
+      throw Exception("Both newMessages and newMessage cannot be specified");
+    }
+
+    setState(() {
+      if (newMessages != null) {
+        channelMessages[id] = newMessages;
+      } else if (newMessage != null) {
+        channelMessages[id]!.add(newMessage);
+      }
+    });
   }
 
   @override
@@ -145,7 +166,7 @@ class _HomePageState extends State<HomePage> {
 
     switch (bottomNavbarIndex) {
       case 0:
-        body = ChatGroupList(chatGroups);
+        body = ChatGroupList(chatGroups, setChannelMessages, channelMessages);
         break;
 
       case 1:
