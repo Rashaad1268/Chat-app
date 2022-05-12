@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:riverpod/riverpod.dart';
 
 MaterialColor createTheme(int primary) {
@@ -27,7 +28,10 @@ final userDataProvider = StateNotifierProvider((ref) {
 });
 
 class UserDataNotifier extends StateNotifier<Map> {
-  UserDataNotifier() : super({});
+  UserDataNotifier()
+      : super({
+          'tokens': Hive.box('Chat-app-storage').get('tokens', defaultValue: {})
+        });
 
   void setData(Map newData) => state = newData;
   void setTokens(String? accessToken, String? refreshToken) {
