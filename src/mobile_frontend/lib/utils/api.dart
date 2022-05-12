@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'constants.dart' show apiUrl;
 
 class InvalidAccessToken implements Exception {}
@@ -6,10 +7,10 @@ class InvalidAccessToken implements Exception {}
 class InvalidRefreshToken implements Exception {}
 
 class APIClient {
-  final Map userData;
+  final StateNotifierProvider userDataProvider;
   final Function setTokens;
 
-  APIClient(this.userData, this.setTokens);
+  APIClient(this.userDataProvider, this.setTokens);
 
   final _dio = Dio(BaseOptions(baseUrl: apiUrl));
 

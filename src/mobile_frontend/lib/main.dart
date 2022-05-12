@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:mobile_frontend/utils/constants.dart';
 import 'pages/home_page.dart';
 import 'utils/colors.dart';
@@ -8,7 +9,7 @@ void main() async {
   await Hive.initFlutter();
   await Hive.openBox('Chat-app-storage');
   await Hive.openBox('Chat-app-settings');
-  runApp(const MyApp());
+  runApp(const ProviderScope(child: MyApp()));
 }
 
 class MyApp extends StatelessWidget {
@@ -22,7 +23,7 @@ class MyApp extends StatelessWidget {
         builder: (context, Box box, widget) {
           return MaterialApp(
             debugShowCheckedModeBanner: false,
-            home: HomePage(),
+            home: const HomePage(),
             theme: ThemeData(
               brightness: box.get('isDarkMode', defaultValue: true)
                   ? Brightness.dark

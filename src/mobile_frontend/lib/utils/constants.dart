@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:riverpod/riverpod.dart';
 
 MaterialColor createTheme(int primary) {
   return MaterialColor(
@@ -20,6 +21,27 @@ MaterialColor createTheme(int primary) {
 
 const apiUrl = 'http://127.0.0.1:8000/api/';
 const websocketUrl = 'ws://127.0.0.1:8000/api/ws/';
+
+final userDataProvider = StateNotifierProvider((ref) {
+  return UserDataNotifier();
+});
+
+class UserDataNotifier extends StateNotifier<Map> {
+  UserDataNotifier() : super({});
+
+  void setData(Map newData) => state = newData;
+  void setTokens(String? accessToken, String? refreshToken) {
+    state.putIfAbsent('tokens', () => {});
+    if (accessToken != null) {
+      state['tokens'] = accessToken;
+    }
+    if (refreshToken != null) {
+      state['refresh'] = refreshToken;
+    }
+  }
+
+  void clear() => state.clear();
+}
 
 final emailRegex = RegExp(
     r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$');

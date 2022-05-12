@@ -3,6 +3,8 @@ import 'dart:convert' show json;
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:riverpod/riverpod.dart';
+
 import 'package:mobile_frontend/pages/settings_page.dart';
 import 'package:mobile_frontend/utils/api.dart';
 import 'package:mobile_frontend/pages/auth_pages.dart';
@@ -10,7 +12,7 @@ import 'package:mobile_frontend/widgets/chat_group_list.dart';
 import 'package:mobile_frontend/widgets/bottom_navbar.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
-import '../utils/constants.dart' show websocketUrl;
+import '../utils/constants.dart' show websocketUrl, userDataProvider;
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -21,7 +23,6 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   late APIClient apiClient;
-  Map userData = {};
   List chatGroups = [];
   Map<String, List<Map>> channelMessages = {};
   bool isLoggedIn = true;
@@ -87,7 +88,7 @@ class _HomePageState extends State<HomePage> {
       setTokens(access: tokens['access'], refresh: tokens['refresh']);
     }
 
-    var response = await requestApiAndUpdateTokens(
+    var response = await apiClient.requestApiAndUpdateTokens(
         'post', 'auth/token/verify/', tokens, setTokens, setIsLoggedIn,
         data: {'token': tokens['access']}, reconnectWs: true);
 
