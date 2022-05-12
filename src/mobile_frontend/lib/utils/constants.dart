@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod/riverpod.dart';
 
 MaterialColor createTheme(int primary) {
@@ -22,29 +23,69 @@ MaterialColor createTheme(int primary) {
 
 const apiUrl = 'http://127.0.0.1:8000/api/';
 const websocketUrl = 'ws://127.0.0.1:8000/api/ws/';
+final Box storage = Hive.box('Chat-app-storage');
 
-final userDataProvider = StateNotifierProvider((ref) {
-  return UserDataNotifier();
+final jwtTokenProvider = StateNotifierProvider((ref) {
+  return JWTTokenNotifier();
 });
 
-class UserDataNotifier extends StateNotifier<Map> {
-  UserDataNotifier()
+class JWTTokenNotifier extends StateNotifier<Map> {
+  JWTTokenNotifier()
       : super({
-          'tokens': Hive.box('Chat-app-storage').get('tokens', defaultValue: {})
+          'tokens': storage.get('tokens', defaultValue: {}),
+          'isLoggedIn': true
         });
 
-  void setData(Map newData) => state = newData;
-  void setTokens(String? accessToken, String? refreshToken) {
-    state.putIfAbsent('tokens', () => {});
-    if (accessToken != null) {
-      state['tokens'] = accessToken;
+  Map get data => state;
+
+  void setData(Map newData) => state.addAll(newData);
+  void setIsLoggedIn(bool status) => state['isLoggedIn'] = status;
+  void setTokens({String? access, String? refresh}) {
+    if (access != null) {
+      state['tokens']['access'] = access;
     }
-    if (refreshToken != null) {
-      state['refresh'] = refreshToken;
+    if (refresh != null) {
+      state['tokens']['refresh'] = refresh;
     }
+
+    storage.put('tokens', state['tokens']);
   }
 
   void clear() => state.clear();
+}
+
+final channelMessagesProvider = StateNotifierProvider(
+    (ref) => ChannelMessageNotifier()); // TODO: implement custom cache
+
+class ChannelMessageNotifier extends StateNotifier<Map<String, List<Map>>> {
+  ChannelMessageNotifier() : super({});
+
+  Map<String, List<Map>> get data => state;
+
+  void setChannelMessages(String channelId, List<Map<String, dynamic>> messages,
+      [bool overwrite = false]) {
+    state[channelId] = messages;
+  }
+
+  void addMessage(String channelId, Map messageData) {
+    if (!state.containsKey(channelId)) {
+      throw Exception('Channel id does not already exist to put a message');
+    }
+    state[channelId]?.add(messageData);
+  }
+
+  void addMessages(String channelId, List<Map> messages,
+      {required bool appendToEnd}) {
+    if (!state.containsKey(channelId)) {
+      throw Exception('Channel id does not already exist to put a message');
+    }
+
+    if (appendToEnd) {
+      state[channelId] = [...messages, ...state[channelId]!];
+    } else {
+      state[channelId] = [...state[channelId]!, ...messages];
+    }
+  }
 }
 
 final emailRegex = RegExp(

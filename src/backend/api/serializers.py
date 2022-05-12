@@ -1,9 +1,15 @@
 from django.contrib.auth import get_user_model
+from django.conf import settings
 from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
 
 from base.models import ChatGroup, Invite, Channel, Member, Message, Role, RolePermissions
 
+
+class ImageSerializer(serializers.ImageField):
+    def to_representation(self, value):
+        if settings.DEBUG: ...
+        return ""
 
 class UserSerializer(ModelSerializer):
     class Meta:

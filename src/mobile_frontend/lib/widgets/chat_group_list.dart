@@ -4,9 +4,8 @@ import '../pages/chat_group_detail.dart';
 
 class Tile extends StatelessWidget {
   final Map chatGroupData;
-  final Function setChannelMessages;
-  final Map channelMessages;
-  const Tile(this.chatGroupData, this.setChannelMessages, this.channelMessages, {Key? key})
+  const Tile(this.chatGroupData,
+      {Key? key})
       : super(key: key);
 
   @override
@@ -17,8 +16,8 @@ class Tile extends StatelessWidget {
       title: Text(chatGroupData['name']),
       onTap: () {
         Navigator.of(context).push(MaterialPageRoute(
-            builder: (ctx) =>
-                ChatGroupDetail(chatGroupData, setChannelMessages, channelMessages)));
+            builder: (ctx) => ChatGroupDetail(
+                chatGroupData)));
       },
       leading: CircleAvatar(
         backgroundImage:
@@ -30,19 +29,12 @@ class Tile extends StatelessWidget {
 
 class ChatGroupList extends StatelessWidget {
   final List chatGroups;
-  final Function setChannelMessages;
-  final Map channelMessages;
-  const ChatGroupList(
-      this.chatGroups, this.setChannelMessages, this.channelMessages,
-      {Key? key})
-      : super(key: key);
+  const ChatGroupList(this.chatGroups, {Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     final diviededTiles = ListTile.divideTiles(
-        context: context,
-        tiles: chatGroups
-            .map((e) => Tile(e, setChannelMessages, channelMessages))).toList();
+        context: context, tiles: chatGroups.map((e) => Tile(e))).toList();
     return ListView(
       padding: const EdgeInsets.all(10),
       children: diviededTiles,

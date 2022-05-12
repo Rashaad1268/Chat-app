@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../utils/api.dart';
-import '../utils/constants.dart' show emailRegex;
+import '../utils/constants.dart'
+    show emailRegex, jwtTokenProvider;
 
 String? validateUsername(String? username) {
   if (username == null) {
@@ -36,25 +38,23 @@ String? validatePassword(String? password) {
 
 String? validatePasswords(String password1, String? password2) {
   if (password1 != password2) {
-    return "Passwords don't match. Check the passwords you entered";
+    return "Passwords don't match.";
   }
+  return null;
 }
 
-class LoginPage extends StatefulWidget {
-  final void Function(bool) setIsLoggedIn;
-  final void Function({String? access, String? refresh, bool reconnectWs})
-      setTokens;
+class LoginPage extends ConsumerStatefulWidget {
   final _formKey = GlobalKey<FormState>();
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
 
-  LoginPage(this.setIsLoggedIn, this.setTokens, {Key? key}) : super(key: key);
+  LoginPage({Key? key}) : super(key: key);
 
   @override
   _LoginPageState createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _LoginPageState extends ConsumerState<LoginPage> {
   @override
   void dispose() {
     super.dispose();
@@ -63,24 +63,24 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<bool> attemptLogin(String email, String password) async {
-    var response = await requestApi('post', 'auth/token/',
+    final jwtTokenNotifier = ref.watch(jwtTokenProvider.notifier);
+    var response = await APIClient(jwtTokenNotifier).makeRequest(
+        'post', 'auth/token/',
         data: {'email': email, 'password': password});
 
     if (response.statusCode == 200) {
       Map<dynamic, dynamic> tokens = response.data['tokens'];
-      widget.setTokens(
-          access: tokens['access'],
-          refresh: tokens['refresh'],
-          reconnectWs: true);
+      jwtTokenNotifier
+          .setTokens(access: tokens['access'], refresh: tokens['refresh']);
 
-      widget.setIsLoggedIn(true);
+      jwtTokenNotifier.setIsLoggedIn(true);
       return true;
     } else if (response.statusCode == 400) {
       // Put a message saying that an account with the given credentials does not exist
-      widget.setIsLoggedIn(false);
+      jwtTokenNotifier.setIsLoggedIn(false);
       return false;
     } else {
-      widget.setIsLoggedIn(false);
+      jwtTokenNotifier.setIsLoggedIn(false);
       return false;
     }
   }
@@ -164,8 +164,7 @@ class _LoginPageState extends State<LoginPage> {
                           onPressed: () {
                             Navigator.push(context,
                                 MaterialPageRoute(builder: (ctx) {
-                              return SignupPage(
-                                  widget.setIsLoggedIn, widget.setTokens);
+                              return SignupPage();
                             }));
                           },
                         )
@@ -177,23 +176,20 @@ class _LoginPageState extends State<LoginPage> {
   }
 }
 
-class SignupPage extends StatefulWidget {
-  final void Function(bool) setIsLoggedIn;
-  final void Function({String? access, String? refresh, bool reconnectWs})
-      setTokens;
+class SignupPage extends ConsumerStatefulWidget {
   final usernameController = TextEditingController();
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
   final password2Controller = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
-  SignupPage(this.setIsLoggedIn, this.setTokens, {Key? key}) : super(key: key);
+  SignupPage({Key? key}) : super(key: key);
 
   @override
   _SignupPageState createState() => _SignupPageState();
 }
 
-class _SignupPageState extends State<SignupPage> {
+class _SignupPageState extends ConsumerState<SignupPage> {
   @override
   void dispose() {
     super.dispose();
@@ -204,22 +200,22 @@ class _SignupPageState extends State<SignupPage> {
   }
 
   Future<bool> attemptSignup() async {
+    final jwtTokenNotifier = ref.watch(jwtTokenProvider.notifier);
     final username = widget.usernameController.text;
     final email = widget.emailController.text;
     final password = widget.passwordController.text;
-    var response = await requestApi('post', 'auth/signup/',
+    var response = await APIClient(jwtTokenNotifier).makeRequest(
+        'post', 'auth/signup/',
         data: {'username': username, 'email': email, 'password': password});
 
     if (response.statusCode == 200) {
       Map<dynamic, dynamic> tokens = response.data['tokens'];
-      widget.setTokens(
-          access: tokens['access'],
-          refresh: tokens['refresh'],
-          reconnectWs: true);
-      widget.setIsLoggedIn(true);
+      jwtTokenNotifier
+          .setTokens(access: tokens['access'], refresh: tokens['refresh']);
+      jwtTokenNotifier.setIsLoggedIn(true);
       return true;
     } else {
-      widget.setIsLoggedIn(false);
+      jwtTokenNotifier.setIsLoggedIn(false);
       return false;
     }
   }

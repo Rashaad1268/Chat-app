@@ -1,4 +1,5 @@
 import datetime
+from email.policy import default
 
 from django.db import models
 from django.conf import settings
@@ -27,7 +28,7 @@ class ChatGroup(Model):  # Named as ChatGroup to avoid confusion with the built-
     creator = models.ForeignKey(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=50)
     description = models.TextField(max_length=255, null=True, blank=True)
-    icon = models.ImageField(upload_to="chatgroup/icons", null=True, blank=True)
+    icon = models.ImageField(upload_to="chatgroup/icons", default="../static/images/default_group_icon.png", null=False, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     @property

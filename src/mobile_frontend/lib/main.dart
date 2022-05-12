@@ -9,6 +9,8 @@ void main() async {
   await Hive.initFlutter();
   await Hive.openBox('Chat-app-storage');
   await Hive.openBox('Chat-app-settings');
+  // Hive.box('Chat-app-storage').deleteFromDisk();
+  // Hive.box('Chat-app-settings').deleteFromDisk();
   runApp(const ProviderScope(child: MyApp()));
 }
 
