@@ -21,12 +21,12 @@ class HomePage extends ConsumerStatefulWidget {
 }
 
 class _HomePageState extends ConsumerState<HomePage> {
-  late APIClient apiClient;
   List chatGroups = [];
   Map userData = {};
   bool isLoading = true;
   int bottomNavbarIndex = 0;
   WebSocketChannel? ws;
+  late APIClient apiClient;
   late JWTTokenNotifier jwtTokenNotifier;
 
   @override

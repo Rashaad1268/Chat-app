@@ -2,7 +2,12 @@ import 'package:flutter/material.dart';
 
 class ChatGroupChannelList extends StatefulWidget {
   final Map chatGroupData;
-  const ChatGroupChannelList(this.chatGroupData, {Key? key}) : super(key: key);
+  Map currentChannel;
+  final void Function(Map<String, dynamic> channel) setCurrentChannel;
+  ChatGroupChannelList(
+      this.chatGroupData, this.currentChannel, this.setCurrentChannel,
+      {Key? key})
+      : super(key: key);
 
   @override
   State<ChatGroupChannelList> createState() => _ChatGroupChannelListState();
@@ -67,8 +72,9 @@ class _ChatGroupChannelListState extends State<ChatGroupChannelList> {
                                   .map((channel) => ListTile(
                                         leading: const Icon(Icons.tag),
                                         horizontalTitleGap: 0,
+                                        selected: channel['id'] == widget.currentChannel['id'],
                                         title: Text(channel['name']),
-                                        onTap: () {},
+                                        onTap: () => widget.setCurrentChannel(channel),
                                       )),
                             ],
                           ),

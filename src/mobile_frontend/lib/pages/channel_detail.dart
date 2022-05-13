@@ -15,9 +15,7 @@ class ChannelDetail extends ConsumerStatefulWidget {
 }
 
 class _ChannelDetailState extends ConsumerState<ChannelDetail> {
-  @override
-  void initState() {
-    super.initState();
+  void getMessages() {
     widget.channelMessages = ref.read(channelMessagesProvider.notifier);
     widget.apiClient = APIClient(ref.read(jwtTokenProvider.notifier));
 
@@ -37,6 +35,7 @@ class _ChannelDetailState extends ConsumerState<ChannelDetail> {
 
   @override
   Widget build(BuildContext context) {
+    getMessages();
     return Scaffold(
       appBar: AppBar(
         title: Row(
@@ -79,8 +78,8 @@ class _ChannelDetailState extends ConsumerState<ChannelDetail> {
             .map((message) => ListTile(
                   contentPadding:
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
-                  leading: null,  // CircleAvatar(
-                    // foregroundImage: NetworkImage(message['author']['user']['profile_picture']),
+                  leading: null, // CircleAvatar(
+                  // foregroundImage: NetworkImage(message['author']['user']['profile_picture']),
                   //) TODO: Fix image url issue in backend
                   title: Row(
                     children: [

@@ -21,8 +21,10 @@ MaterialColor createTheme(int primary) {
   );
 }
 
-const apiUrl = 'http://127.0.0.1:8000/api/';
-const websocketUrl = 'ws://127.0.0.1:8000/api/ws/';
+const baseUrl = '127.0.0.1:8000/';
+const apiUrl = 'http://${baseUrl}api/';
+const websocketUrl = 'ws://${baseUrl}api/ws/';
+
 final Box storage = Hive.box('Chat-app-storage');
 
 final jwtTokenProvider = StateNotifierProvider((ref) {
@@ -85,6 +87,11 @@ class ChannelMessageNotifier extends StateNotifier<Map<String, List<Map>>> {
     } else {
       state[channelId] = [...state[channelId]!, ...messages];
     }
+  }
+
+  List<Map>? getMessagesForChannel(String channelId) {
+    if (!data.containsKey(channelId)) throw Exception("Invalid channel id");
+    return data[channelId];
   }
 }
 
