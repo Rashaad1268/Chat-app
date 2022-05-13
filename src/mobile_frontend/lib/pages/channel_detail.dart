@@ -79,9 +79,9 @@ class _ChannelDetailState extends ConsumerState<ChannelDetail> {
             .map((message) => ListTile(
                   contentPadding:
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
-                  leading: CircleAvatar(
-                    foregroundImage: NetworkImage(message['author']['user']['profile_picture']),
-                  ),
+                  leading: null,  // CircleAvatar(
+                    // foregroundImage: NetworkImage(message['author']['user']['profile_picture']),
+                  //) TODO: Fix image url issue in backend
                   title: Row(
                     children: [
                       Text(
